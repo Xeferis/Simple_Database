@@ -121,15 +121,18 @@ class generator():
 
         for val in col:
             for e1 in dict_check.values():
+
                 if all(e1k in col[val].keys() for e1k in e1.keys()):
                     keys_valid = True
                 else:
                     raise KeyError("Key don't match needed layout or spelling")
                 
                 if keys_valid:
+
                     for cvt in col[val]:
 
                         if cvt == "type":
+
                             if "(" in col[val][cvt]:
                                 clnd = col[val][cvt].split("(")[0]
                             else:
@@ -140,15 +143,18 @@ class generator():
                                 raise TypeError(f"SQL Datatype not correct - see {val}, {clnd} not matching validationvalues!")
 
                         if cvt == "foreignkey":
+
                             if type(col[val][cvt][0]) is e1[cvt][0]:
                                 datatypes_valid = True
                             else:
                                 raise TypeError(f"Datatype don't match needed type - see {col[val][cvt][0]}(type: {type(col[val][cvt][0])}) not matching {e1[cvt][0]}")
+                            
                             for cvt2 in col[val][cvt][1]:
                                 if type(col[val][cvt][1][cvt2]) is e1[cvt][1][cvt2]:
                                     datatypes_valid = True
                                 else:
                                     raise TypeError(f"Datatype doesn't match needed type - see {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])}) not matching {e1[cvt][1][cvt2]}")
+  
                         elif type(col[val][cvt]) is e1[cvt]:
                             datatypes_valid = True
                         else:
