@@ -170,10 +170,14 @@ class generator():
         else:
             return False
 
+    # PLACEHOLDER!
+    # ---
     def __check_db(self) -> bool:
         exst = False
         return exst
+    # ---
 
+    
     def close(self):
         self.db.close()
 
