@@ -50,21 +50,21 @@ class generator():
     
     def __col2string(self, col: dict) -> list:
         out = []
+        frngky = []
         for c in col:
             tmp = []
+            tmp.append(c)
+            tmp.append(col[c]["type"])
+            if col[c]["primarykey"]:
+                tmp.append("PRIMARY KEY")
+            if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
+                tmp.append("AUTOINCREMENT")
+            if col[c]["mandatory"]:
+                tmp.append("NOT NULL")
             if col[c]["foreignkey"][0]:
-                tmp.append(f"FOREIGN KEY({col[c]["foreignkey"][0]["table"]}_ID_FK) REFERENCES {col[c]["foreignkey"][0]["table"]}({col[c]["foreignkey"][0]["column"]})")
-            else:
-                tmp.append(c)
-                tmp.append(col[c]["type"])
-                if col[c]["primarykey"]:
-                    tmp.append("PRIMARY KEY")
-                if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
-                    tmp.append("AUTOINCREMENT")
-                if col[c]["mandatory"]:
-                    tmp.append("NOT NULL")
+                frngky.append(f"FOREIGN KEY({c}) REFERENCES {col[c]['foreignkey'][1]['table']}({col[c]['foreignkey'][1]['column']})")
             out.append(" ".join(tmp))
-        return out
+        return out + frngky
 
     def __check_cols(self, col: dict) -> bool:
         keys_valid = False
@@ -197,5 +197,35 @@ if __name__ == "__main__":
             },
             "Name": {"primarykey": False, "autoincrement": False, "type": "TEXT", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
             "Age": {"primarykey": False, "autoincrement": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
+        }
+    )
+    test1.add_table(
+        "Test2", {
+            "F_ID": {
+                "primarykey": False,
+                "autoincrement": True,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    True, 
+                    {
+                        "table": "Test1",
+                        "column": "ID"
+                    }
+                )
+            },
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(20)",
+                "mandatory": True,
+                "foreignkey": (
+                    False, 
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
         }
     )
