@@ -180,7 +180,8 @@ class generator():
                                 else:
                                     raise TypeError(f"""
                         Datatype doesn't match needed type - see:
-                        {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])})
+                        {col[val][cvt][1][cvt2]}
+                        (type: {type(col[val][cvt][1][cvt2])})
                         not matching {e1[cvt][1][cvt2]}
                         """)
 
