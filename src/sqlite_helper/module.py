@@ -34,7 +34,7 @@ class generator():
         if not self.__check_cols(col):
             raise SyntaxError("Invalid value in columns!")
         cur = self.db.cursor()
-        clmns = self.__col2string(col)
+        clmns = ", ".join(self.__col2string(col))
         sql_stmnt = f"""
                     CREATE TABLE
                     {tbl_name}
@@ -49,24 +49,39 @@ class generator():
             return True
     
     def __col2string(self, col: dict) -> list:
+        out = []
+        frngky = []
         for c in col:
             tmp = []
-            tmp.append(c["name"])
-            tmp.append(c["type"])
-            if c["primarykey"]:
+            tmp.append(c)
+            tmp.append(col[c]["type"])
+            if col[c]["primarykey"] and col[c]["foreignkey"][0]:
+                raise ValueError("You can only use one primary or foreign!")
+            if col[c]["primarykey"]:
                 tmp.append("PRIMARY KEY")
-            if c["autoincrement"] and c["type"] == "INTEGER" and c["primarykey"] and not c["mandatory"]:
+            if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
                 tmp.append("AUTOINCREMENT")
-            if c["mandatory"]:
+            if col[c]["mandatory"]:
                 tmp.append("NOT NULL")
-        return " ".join(tmp)
-
+            if col[c]["foreignkey"][0] and not col[c]["primarykey"] and not col[c]["autoincrement"]:
+                frngky.append(f"FOREIGN KEY({c}) REFERENCES {col[c]['foreignkey'][1]['table']}({col[c]['foreignkey'][1]['column']})")
+            out.append(" ".join(tmp))
+        return out + frngky
 
     def __check_cols(self, col: dict) -> bool:
         keys_valid = False
         datatypes_valid = False
         columns_valid = False
         
+        sql_datatypes = [
+            "INT","INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT","BIGINT",
+            "UNSIGNED BIG INT", "INT2", "INT8", "CHARACTER","VARCHAR",
+            "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", 
+            "NVARCHAR", "TEXT", "CLOB", "CHAR", "BLOB", "REAL", "DOUBLE", 
+            "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL", "BOOLEAN",
+            "DATE", "DATETIME"
+        ]
+
         forbidden = [
             "ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ALWAYS", "ANALYZE",
             "AND", "AS", "ASC", "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN",
@@ -106,15 +121,44 @@ class generator():
 
         for val in col:
             for e1 in dict_check.values():
+
                 if all(e1k in col[val].keys() for e1k in e1.keys()):
                     keys_valid = True
                 else:
-                    raise KeyError("Key don't match need layout or spelling")
+                    raise KeyError("Key don't match needed layout or spelling")
                 
-                if keys_valid and all(type(col[val][cvt]) is e1[cvt] for cvt in col[val]):
-                    datatypes_valid = True
-                else:
-                    raise TypeError("Datatype don't match needed type")
+                if keys_valid:
+
+                    for cvt in col[val]:
+
+                        if cvt == "type":
+
+                            if "(" in col[val][cvt]:
+                                clnd = col[val][cvt].split("(")[0]
+                            else:
+                                clnd = col[val][cvt]
+                            if clnd in sql_datatypes:
+                                datatypes_valid = True
+                            else:
+                                raise TypeError(f"SQL Datatype not correct - see {val}, {clnd} not matching validationvalues!")
+
+                        if cvt == "foreignkey":
+
+                            if type(col[val][cvt][0]) is e1[cvt][0]:
+                                datatypes_valid = True
+                            else:
+                                raise TypeError(f"Datatype don't match needed type - see {col[val][cvt][0]}(type: {type(col[val][cvt][0])}) not matching {e1[cvt][0]}")
+                            
+                            for cvt2 in col[val][cvt][1]:
+                                if type(col[val][cvt][1][cvt2]) is e1[cvt][1][cvt2]:
+                                    datatypes_valid = True
+                                else:
+                                    raise TypeError(f"Datatype doesn't match needed type - see {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])}) not matching {e1[cvt][1][cvt2]}")
+  
+                        elif type(col[val][cvt]) is e1[cvt]:
+                            datatypes_valid = True
+                        else:
+                            raise TypeError(f"Datatype don't match needed type - see {col[val][cvt]}(type: {type(col[val][cvt])}) not matching {e1[cvt]}")
 
         if not any(x.upper() in forbidden for x in col):
             columns_valid = True
@@ -126,10 +170,14 @@ class generator():
         else:
             return False
 
+    # PLACEHOLDER!
+    # ---
     def __check_db(self) -> bool:
         exst = False
         return exst
+    # ---
 
+    
     def close(self):
         self.db.close()
 
@@ -144,10 +192,23 @@ if __name__ == "__main__":
     test1 = generator("Test")
     test1.add_table(
         "Test", {
+            "ID": {
+                "primarykey": True,
+                "autoincrement": True,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    False, 
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
             "Title": {
                 "primarykey": False,
                 "autoincrement": False,
-                "type": "CHAR(25)",
+                "type": "CHAR(20)",
                 "mandatory": True,
                 "foreignkey": (
                     False, 
@@ -157,7 +218,37 @@ if __name__ == "__main__":
                     }
                 )
             },
-            "Name": {"primarykey": False, "type": "CHAR(30)", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
-            "Age": {"primarykey": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
+            "Name": {"primarykey": False, "autoincrement": False, "type": "TEXT", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
+            "Age": {"primarykey": False, "autoincrement": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
+        }
+    )
+    test1.add_table(
+        "Test2", {
+            "F_ID": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    True, 
+                    {
+                        "table": "Test1",
+                        "column": "ID"
+                    }
+                )
+            },
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(20)",
+                "mandatory": True,
+                "foreignkey": (
+                    False, 
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
         }
     )
