@@ -34,7 +34,7 @@ class generator():
         if not self.__check_cols(col):
             raise SyntaxError("Invalid value in columns!")
         cur = self.db.cursor()
-        clmns = self.__col2string(col)
+        clmns = ", ".join(self.__col2string(col))
         sql_stmnt = f"""
                     CREATE TABLE
                     {tbl_name}
@@ -49,9 +49,10 @@ class generator():
             return True
     
     def __col2string(self, col: dict) -> list:
+        out = []
         for c in col:
             tmp = []
-            tmp.append(col[c])
+            tmp.append(c)
             tmp.append(col[c]["type"])
             if col[c]["primarykey"]:
                 tmp.append("PRIMARY KEY")
@@ -59,8 +60,8 @@ class generator():
                 tmp.append("AUTOINCREMENT")
             if col[c]["mandatory"]:
                 tmp.append("NOT NULL")
-        return " ".join(tmp)
-
+            out.append(" ".join(tmp))
+        return out
 
     def __check_cols(self, col: dict) -> bool:
         keys_valid = False
@@ -156,6 +157,19 @@ if __name__ == "__main__":
     test1 = generator("Test")
     test1.add_table(
         "Test", {
+            "ID": {
+                "primarykey": True,
+                "autoincrement": True,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    False, 
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
             "Title": {
                 "primarykey": False,
                 "autoincrement": False,
