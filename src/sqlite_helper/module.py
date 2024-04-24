@@ -55,13 +55,15 @@ class generator():
             tmp = []
             tmp.append(c)
             tmp.append(col[c]["type"])
+            if col[c]["primarykey"] and col[c]["foreignkey"][0]:
+                raise ValueError("You can only use one primary or foreign!")
             if col[c]["primarykey"]:
                 tmp.append("PRIMARY KEY")
             if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
                 tmp.append("AUTOINCREMENT")
             if col[c]["mandatory"]:
                 tmp.append("NOT NULL")
-            if col[c]["foreignkey"][0]:
+            if col[c]["foreignkey"][0] and not col[c]["primarykey"] and not col[c]["autoincrement"]:
                 frngky.append(f"FOREIGN KEY({c}) REFERENCES {col[c]['foreignkey'][1]['table']}({col[c]['foreignkey'][1]['column']})")
             out.append(" ".join(tmp))
         return out + frngky
@@ -203,7 +205,7 @@ if __name__ == "__main__":
         "Test2", {
             "F_ID": {
                 "primarykey": False,
-                "autoincrement": True,
+                "autoincrement": False,
                 "type": "INTEGER",
                 "mandatory": False,
                 "foreignkey": (
