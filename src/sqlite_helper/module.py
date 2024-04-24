@@ -13,17 +13,34 @@ class generator():
             print(f"Generating {self.db_name}.db")
         self.db = sql3.connect(f"./database/{self.db_name}.db")
     
-    def add_table(self, tbl_name: str, col: list) -> bool:
+    def add_table(self, tbl_name: str, col: dict) -> bool:
+        """
+        Dictionary Aufbau
+
+        "col_name": {
+                "primarykey": bool,
+                "autoincrement": bool,
+                "type": DATATYPEasSTRING,
+                "mandatory": bool,
+                "foreignkey": (
+                    bool, 
+                    {
+                        "table": REFERENCE_TABLENAMEasSTRING,
+                        "column": REFERENCE_COLUMNNAMEasSTRING
+                    }
+                )
+            },
+        """
         if not self.__check_cols(col):
-            raise ValueError("Invalid Columnname!")
+            raise SyntaxError("Invalid value in columns!")
         cur = self.db.cursor()
-        clmns = ", ".join(col)
+        clmns = self.__col2string(col)
         sql_stmnt = f"""
                     CREATE TABLE
                     {tbl_name}
                     (
                         {clmns}
-                    )
+                    );
                     """
         res = cur.execute(sql_stmnt)
         if res.fetchone is None:
@@ -31,7 +48,25 @@ class generator():
         else:
             return True
     
-    def __check_cols(self, col: list) -> bool:
+    def __col2string(self, col: dict) -> list:
+        for c in col:
+            tmp = []
+            tmp.append(c["name"])
+            tmp.append(c["type"])
+            if c["primarykey"]:
+                tmp.append("PRIMARY KEY")
+            if c["autoincrement"] and c["type"] == "INTEGER" and c["primarykey"] and not c["mandatory"]:
+                tmp.append("AUTOINCREMENT")
+            if c["mandatory"]:
+                tmp.append("NOT NULL")
+        return " ".join(tmp)
+
+
+    def __check_cols(self, col: dict) -> bool:
+        keys_valid = False
+        datatypes_valid = False
+        columns_valid = False
+        
         forbidden = [
             "ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ALWAYS", "ANALYZE",
             "AND", "AS", "ASC", "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN",
@@ -54,10 +89,42 @@ class generator():
             "VIRTUAL", "WHEN", "WHERE", "WINDOW", "WITH", "WITHOUT"
         ]
 
-        if any(x.upper() in forbidden for x in col):
-            return False
+        dict_check = {"col_name": {
+                "primarykey": bool,
+                "autoincrement": bool,
+                "type": str,
+                "mandatory": bool,
+                "foreignkey": (
+                    bool, 
+                    {
+                        "table": str,
+                        "column": str
+                    }
+                )
+            },
+        }
+
+        for val in col:
+            for e1 in dict_check.values():
+                if all(e1k in col[val].keys() for e1k in e1.keys()):
+                    keys_valid = True
+                else:
+                    raise KeyError("Key don't match need layout or spelling")
+                
+                if keys_valid and all(type(col[val][cvt]) is e1[cvt] for cvt in col[val]):
+                    datatypes_valid = True
+                else:
+                    raise TypeError("Datatype don't match needed type")
+
+        if not any(x.upper() in forbidden for x in col):
+            columns_valid = True
         else:
+            raise ValueError("Invalid value in column naming!")
+        
+        if all([keys_valid, datatypes_valid, columns_valid]):
             return True
+        else:
+            return False
 
     def __check_db(self) -> bool:
         exst = False
@@ -75,4 +142,22 @@ class establish():
         
 if __name__ == "__main__":
     test1 = generator("Test")
-    test1.add_table("Test", ["Title","Name","Age"])
+    test1.add_table(
+        "Test", {
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(25)",
+                "mandatory": True,
+                "foreignkey": (
+                    False, 
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
+            "Name": {"primarykey": False, "type": "CHAR(30)", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
+            "Age": {"primarykey": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
+        }
+    )
