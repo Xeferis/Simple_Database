@@ -51,13 +51,13 @@ class generator():
     def __col2string(self, col: dict) -> list:
         for c in col:
             tmp = []
-            tmp.append(c["name"])
-            tmp.append(c["type"])
-            if c["primarykey"]:
+            tmp.append(col[c])
+            tmp.append(col[c]["type"])
+            if col[c]["primarykey"]:
                 tmp.append("PRIMARY KEY")
-            if c["autoincrement"] and c["type"] == "INTEGER" and c["primarykey"] and not c["mandatory"]:
+            if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
                 tmp.append("AUTOINCREMENT")
-            if c["mandatory"]:
+            if col[c]["mandatory"]:
                 tmp.append("NOT NULL")
         return " ".join(tmp)
 
@@ -109,12 +109,24 @@ class generator():
                 if all(e1k in col[val].keys() for e1k in e1.keys()):
                     keys_valid = True
                 else:
-                    raise KeyError("Key don't match need layout or spelling")
+                    raise KeyError("Key don't match needed layout or spelling")
                 
-                if keys_valid and all(type(col[val][cvt]) is e1[cvt] for cvt in col[val]):
-                    datatypes_valid = True
-                else:
-                    raise TypeError("Datatype don't match needed type")
+                if keys_valid:
+                    for cvt in col[val]:
+                        if cvt == "foreignkey":
+                            if type(col[val][cvt][0]) is e1[cvt][0]:
+                                datatypes_valid = True
+                            else:
+                                raise TypeError(f"Datatype don't match needed type - see {col[val][cvt][0]}(type: {type(col[val][cvt][0])}) not matching {e1[cvt][0]}")
+                            for cvt2 in col[val][cvt][1]:
+                                if type(col[val][cvt][1][cvt2]) is e1[cvt][1][cvt2]:
+                                    datatypes_valid = True
+                                else:
+                                    raise TypeError(f"Datatype don't match needed type - see {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])}) not matching {e1[cvt][1][cvt2]}")
+                        elif type(col[val][cvt]) is e1[cvt]:
+                            datatypes_valid = True
+                        else:
+                            raise TypeError(f"Datatype don't match needed type - see {col[val][cvt]}(type: {type(col[val][cvt])}) not matching {e1[cvt]}")
 
         if not any(x.upper() in forbidden for x in col):
             columns_valid = True
@@ -157,7 +169,7 @@ if __name__ == "__main__":
                     }
                 )
             },
-            "Name": {"primarykey": False, "type": "CHAR(30)", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
-            "Age": {"primarykey": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
+            "Name": {"primarykey": False, "autoincrement": False, "type": "CHAR(30)", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
+            "Age": {"primarykey": False, "autoincrement": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
         }
     )
