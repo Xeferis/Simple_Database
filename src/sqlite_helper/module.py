@@ -128,6 +128,17 @@ class generator():
                 
                 if keys_valid:
                     for cvt in col[val]:
+
+                        if cvt == "type":
+                            if "(" in col[val][cvt]:
+                                clnd = col[val][cvt].split("(")[0]
+                            else:
+                                clnd = col[val][cvt]
+                            if clnd in sql_datatypes:
+                                datatypes_valid = True
+                            else:
+                                raise TypeError(f"SQL Datatype not correct - see {val}, {clnd} not matching validationvalues!")
+
                         if cvt == "foreignkey":
                             if type(col[val][cvt][0]) is e1[cvt][0]:
                                 datatypes_valid = True
@@ -137,7 +148,7 @@ class generator():
                                 if type(col[val][cvt][1][cvt2]) is e1[cvt][1][cvt2]:
                                     datatypes_valid = True
                                 else:
-                                    raise TypeError(f"Datatype don't match needed type - see {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])}) not matching {e1[cvt][1][cvt2]}")
+                                    raise TypeError(f"Datatype doesn't match needed type - see {col[val][cvt][1][cvt2]}(type: {type(col[val][cvt][1][cvt2])}) not matching {e1[cvt][1][cvt2]}")
                         elif type(col[val][cvt]) is e1[cvt]:
                             datatypes_valid = True
                         else:
