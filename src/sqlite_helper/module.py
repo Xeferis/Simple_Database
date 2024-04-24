@@ -52,14 +52,17 @@ class generator():
         out = []
         for c in col:
             tmp = []
-            tmp.append(c)
-            tmp.append(col[c]["type"])
-            if col[c]["primarykey"]:
-                tmp.append("PRIMARY KEY")
-            if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
-                tmp.append("AUTOINCREMENT")
-            if col[c]["mandatory"]:
-                tmp.append("NOT NULL")
+            if col[c]["foreignkey"][0]:
+                tmp.append(f"FOREIGN KEY({col[c]["foreignkey"][0]["table"]}_ID_FK) REFERENCES {col[c]["foreignkey"][0]["table"]}({col[c]["foreignkey"][0]["column"]})")
+            else:
+                tmp.append(c)
+                tmp.append(col[c]["type"])
+                if col[c]["primarykey"]:
+                    tmp.append("PRIMARY KEY")
+                if col[c]["autoincrement"] and col[c]["type"] == "INTEGER" and col[c]["primarykey"] and not col[c]["mandatory"]:
+                    tmp.append("AUTOINCREMENT")
+                if col[c]["mandatory"]:
+                    tmp.append("NOT NULL")
             out.append(" ".join(tmp))
         return out
 
@@ -68,6 +71,15 @@ class generator():
         datatypes_valid = False
         columns_valid = False
         
+        sql_datatypes = [
+            "INT","INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT","BIGINT",
+            "UNSIGNED BIG INT", "INT2", "INT8", "CHARACTER","VARCHAR",
+            "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", 
+            "NVARCHAR", "TEXT", "CLOB", "CHAR", "BLOB", "REAL", "DOUBLE", 
+            "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL", "BOOLEAN",
+            "DATE", "DATETIME"
+        ]
+
         forbidden = [
             "ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ALWAYS", "ANALYZE",
             "AND", "AS", "ASC", "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN",
@@ -173,7 +185,7 @@ if __name__ == "__main__":
             "Title": {
                 "primarykey": False,
                 "autoincrement": False,
-                "type": "CHAR(25)",
+                "type": "CHAR(20)",
                 "mandatory": True,
                 "foreignkey": (
                     False, 
@@ -183,7 +195,7 @@ if __name__ == "__main__":
                     }
                 )
             },
-            "Name": {"primarykey": False, "autoincrement": False, "type": "CHAR(30)", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
+            "Name": {"primarykey": False, "autoincrement": False, "type": "TEXT", "mandatory": True, "foreignkey": (False, {"table": "", "column": ""})},
             "Age": {"primarykey": False, "autoincrement": False, "type": "INTEGER", "mandatory": False, "foreignkey": (False, {"table": "", "column": ""})}
         }
     )
