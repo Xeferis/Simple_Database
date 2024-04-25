@@ -6,6 +6,7 @@ class generator():
 
     def __init__(self, db_name: str) -> None:
         self.db_name = db_name
+        self.tables = []
         if not os.path.exists("./database"):
             os.makedirs("./database")
         if self.__check_db():
@@ -47,6 +48,7 @@ class generator():
         if res.fetchone is None:
             return False
         else:
+            self.tables.append(tbl_name)
             return True
 
     def __col2string(self, col: dict) -> list:
@@ -225,93 +227,3 @@ class establish():
             raise ConnectionError("Database does not exist.
             Check name or generate a database first!")
         """
-
-
-if __name__ == "__main__":
-    test1 = generator("Test")
-    test1.add_table(
-        "Test", {
-            "ID": {
-                "primarykey": "True",
-                "autoincrement": True,
-                "type": "INTEGER",
-                "mandatory": False,
-                "foreignkey": (
-                    False,
-                    {
-                        "table": "",
-                        "column": ""
-                    }
-                )
-            },
-            "Title": {
-                "primarykey": False,
-                "autoincrement": False,
-                "type": "CHAR(20)",
-                "mandatory": True,
-                "foreignkey": (
-                    False,
-                    {
-                        "table": "",
-                        "column": ""
-                    }
-                )
-            },
-            "Name": {
-                "primarykey": False,
-                "autoincrement": False,
-                "type": "TEXT",
-                "mandatory": True,
-                "foreignkey": (
-                    False,
-                    {
-                        "table": "",
-                        "column": ""
-                    }
-                )
-            },
-            "Age": {
-                "primarykey": False,
-                "autoincrement": False,
-                "type": "INTEGER",
-                "mandatory": False,
-                "foreignkey": (
-                    False,
-                    {
-                        "table": "",
-                        "column": ""
-                    }
-                )
-            }
-        }
-    )
-    test1.add_table(
-        "Test2", {
-            "F_ID": {
-                "primarykey": False,
-                "autoincrement": False,
-                "type": "INTEGER",
-                "mandatory": False,
-                "foreignkey": (
-                    True,
-                    {
-                        "table": "Test1",
-                        "column": "ID"
-                    }
-                )
-            },
-            "Title": {
-                "primarykey": False,
-                "autoincrement": False,
-                "type": "CHAR(20)",
-                "mandatory": True,
-                "foreignkey": (
-                    False,
-                    {
-                        "table": "",
-                        "column": ""
-                    }
-                )
-            },
-        }
-    )

@@ -16,5 +16,99 @@ def db():
     os.rmdir("./database")
 
 
+def test_naming(db):
+    assert db.db_name == "test"
+
+
+def test_addTable(db):
+    db.add_table(
+        "Test", {
+            "ID": {
+                "primarykey": True,
+                "autoincrement": True,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(20)",
+                "mandatory": True,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
+            "Name": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "TEXT",
+                "mandatory": True,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
+            "Age": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            }
+        }
+    )
+    db.add_table(
+        "Test2", {
+            "F_ID": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    True,
+                    {
+                        "table": "Test1",
+                        "column": "ID"
+                    }
+                )
+            },
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(20)",
+                "mandatory": True,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
+        }
+    )
+    assert db.tables == ["Test", "Test2"]
+
+
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
