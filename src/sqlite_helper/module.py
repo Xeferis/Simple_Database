@@ -51,6 +51,12 @@ class generator():
             self.tables.append(tbl_name)
             return True
 
+    def remove_table(self, tbl_name) -> bool:
+        if self.__check_db():
+            curs
+            return True
+        return False
+
     def __col2string(self, col: dict) -> list:
         out = []
         frngky = []
@@ -213,6 +219,19 @@ class generator():
         exst = False
         return exst
     # ---
+
+    def __check_tbl(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
+                """
+        res = cur.execute(sql_stmnt)
+        if res.fetchone is None:
+            cur.close()
+            return False
+        else:
+            cur.close()
+            return True
 
     def close(self):
         self.db.close()
