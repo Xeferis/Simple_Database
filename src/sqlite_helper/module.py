@@ -52,8 +52,12 @@ class generator():
             return True
 
     def remove_table(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                    DROP TABLE IF EXISTS {tbl_name}
+                    """
         if self.__check_db():
-            curs
+            cur.execute(sql_stmnt)
             return True
         return False
 
