@@ -56,9 +56,11 @@ class generator():
         sql_stmnt = f"""
                     DROP TABLE IF EXISTS {tbl_name}
                     """
-        if self.__check_db():
+        if self.__check_tbl(tbl_name):
             cur.execute(sql_stmnt)
-            return True
+            if not self.__check_tbl(tbl_name):
+                self.tables.remove(tbl_name)
+                return True
         return False
 
     def __col2string(self, col: dict) -> list:
