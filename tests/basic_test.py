@@ -113,21 +113,33 @@ def test_addTable(db):
 def test_add_and_remove_table(db):
     table_name = 'users'
     columns = {
-        "id": {
-            "type": "INTEGER",
-            "primarykey": True,
-            "autoincrement": True,
-            "mandatory": True
-        },
-        "name": {
-            "type": "TEXT",
-            "mandatory": True
-        },
-        "age": {
-            "type": "INTEGER",
-            "mandatory": False
+            "F_ID": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "INTEGER",
+                "mandatory": False,
+                "foreignkey": (
+                    True,
+                    {
+                        "table": "Test1",
+                        "column": "ID"
+                    }
+                )
+            },
+            "Title": {
+                "primarykey": False,
+                "autoincrement": False,
+                "type": "CHAR(20)",
+                "mandatory": True,
+                "foreignkey": (
+                    False,
+                    {
+                        "table": "",
+                        "column": ""
+                    }
+                )
+            },
         }
-    }
 
     # Tabelle hinzufügen
     result = db.add_table(table_name, columns)
