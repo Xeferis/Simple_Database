@@ -58,6 +58,7 @@ class generator():
                     """
         if self.__check_tbl(tbl_name):
             cur.execute(sql_stmnt)
+            cur.close()
             if not self.__check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
