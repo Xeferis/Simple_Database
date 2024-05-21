@@ -110,5 +110,40 @@ def test_addTable(db):
     assert db.tables == ["Test", "Test2"]
 
 
+def test_add_and_remove_table(db):
+    table_name = 'users'
+    columns = {
+        "id": {
+            "type": "INTEGER",
+            "primarykey": True,
+            "autoincrement": True,
+            "mandatory": True
+        },
+        "name": {
+            "type": "TEXT",
+            "mandatory": True
+        },
+        "age": {
+            "type": "INTEGER",
+            "mandatory": False
+        }
+    }
+
+    # Tabelle hinzufügen
+    result = db.add_table(table_name, columns)
+    assert result, "Die Tabelle wurde nicht erfolgreich hinzugefügt"
+    assert db.__check_tbl(table_name), "Die Tabelle existiert in der Datenbank"
+    assert table_name in db.tables, "Die Tabelle ist nicht in der internen Tabelle-Liste"
+
+    # Tabelle entfernen
+    result = db.remove_table(table_name)
+    assert result, "Die Tabelle wurde nicht erfolgreich entfernt"
+    assert not db.__check_tbl(table_name), "Die Tabelle existiert nicht in der Datenbank"
+    assert table_name not in db.tables, "Die Tabelle ist noch in der internen Tabelle-Liste"
+
+
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
+
+if __name__ == "__main__":
+    pytest.main([os.path.basename(__file__), '-v'])
