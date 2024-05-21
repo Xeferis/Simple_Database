@@ -54,11 +54,10 @@ class generator():
     def remove_table(self, tbl_name) -> bool:
         cur = self.db.cursor()
         sql_stmnt = f"""
-                    DROP TABLE IF EXISTS {tbl_name}
+                    DROP TABLE {tbl_name};
                     """
         if self.__check_tbl(tbl_name):
             cur.execute(sql_stmnt)
-            cur.close()
             if not self.__check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
@@ -233,11 +232,13 @@ class generator():
                 SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
                 """
         res = cur.execute(sql_stmnt)
-        if res.fetchone is None:
+        if res.fetchone() is None:
+            print("Tabelle ist nicht vorhanden")
             cur.close()
             return False
         else:
             cur.close()
+            print("Tabelle ist vorhanden")
             return True
 
     def close(self):

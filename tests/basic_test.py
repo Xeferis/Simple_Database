@@ -154,3 +154,7 @@ def test_add_and_remove_table(db):
 
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
+
+
+if __name__ == "__main__":
+    pytest.main([r"./tests/basic_test.py", '-v'])
