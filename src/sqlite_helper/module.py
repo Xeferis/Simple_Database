@@ -51,6 +51,18 @@ class generator():
             self.tables.append(tbl_name)
             return True
 
+    def remove_table(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                    DROP TABLE {tbl_name};
+                    """
+        if self.__check_tbl(tbl_name):
+            cur.execute(sql_stmnt)
+            if not self.__check_tbl(tbl_name):
+                self.tables.remove(tbl_name)
+                return True
+        return False
+
     def __col2string(self, col: dict) -> list:
         out = []
         frngky = []
@@ -213,6 +225,21 @@ class generator():
         exst = False
         return exst
     # ---
+
+    def __check_tbl(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
+                """
+        res = cur.execute(sql_stmnt)
+        if res.fetchone() is None:
+            print("Tabelle ist nicht vorhanden")
+            cur.close()
+            return False
+        else:
+            cur.close()
+            print("Tabelle ist vorhanden")
+            return True
 
     def close(self):
         self.db.close()
