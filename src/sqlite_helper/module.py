@@ -2,7 +2,7 @@ import os
 import sqlite3 as sql3
 
 
-class generator():
+class establish():
 
     def __init__(self, db_name: str) -> None:
         self.db_name = db_name
@@ -10,6 +10,46 @@ class generator():
         if not os.path.exists("./database"):
             os.makedirs("./database")
         if self.__check_db():
+            print(f"Connecting to {self.db_name}.db")
+            self.db = sql3.connect(f"./database/{self.db_name}.db")
+        else:
+            print("Database is not Reachable")
+
+    # PLACEHOLDER!
+    # ---
+    def __check_db(self) -> bool:
+        exst = False
+        return exst
+    # ---
+
+    def __check_tbl(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
+                """
+        res = cur.execute(sql_stmnt)
+        if res.fetchone() is None:
+            print("Tabelle ist nicht vorhanden")
+            cur.close()
+            return False
+        else:
+            cur.close()
+            print("Tabelle ist vorhanden")
+            return True
+
+    def close(self):
+        self.db.close()
+
+
+class generator(establish):
+
+    def __init__(self, db_name: str) -> None:
+        super().__init__(db_name)
+        self.db_name = db_name
+        self.tables = []
+        if not os.path.exists("./database"):
+            os.makedirs("./database")
+        if self._establish__check_db():
             print(f"Connecting to {self.db_name}.db")
         else:
             print(f"Generating {self.db_name}.db")
@@ -56,9 +96,9 @@ class generator():
         sql_stmnt = f"""
                     DROP TABLE {tbl_name};
                     """
-        if self.__check_tbl(tbl_name):
+        if self._establish__check_tbl(tbl_name):
             cur.execute(sql_stmnt)
-            if not self.__check_tbl(tbl_name):
+            if not self._establish__check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
         return False
@@ -218,39 +258,3 @@ class generator():
             return True
         else:
             return False
-
-    # PLACEHOLDER!
-    # ---
-    def __check_db(self) -> bool:
-        exst = False
-        return exst
-    # ---
-
-    def __check_tbl(self, tbl_name) -> bool:
-        cur = self.db.cursor()
-        sql_stmnt = f"""
-                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
-                """
-        res = cur.execute(sql_stmnt)
-        if res.fetchone() is None:
-            print("Tabelle ist nicht vorhanden")
-            cur.close()
-            return False
-        else:
-            cur.close()
-            print("Tabelle ist vorhanden")
-            return True
-
-    def close(self):
-        self.db.close()
-
-
-class establish():
-
-    def __init__(self, db_name: str) -> None:
-        pass
-        """
-        if not __check_db(db_name):
-            raise ConnectionError("Database does not exist.
-            Check name or generate a database first!")
-        """
