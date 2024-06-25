@@ -5,6 +5,9 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 from sqlite_helper import generator as gen
 
 
+def test_GitHub_action():
+    assert True
+
 @pytest.fixture()
 def db():
     print("setup")
