@@ -1,5 +1,6 @@
 import os
 import sqlite3 as sql3
+from typing import Union
 
 
 class establish():
@@ -11,9 +12,9 @@ class establish():
             os.makedirs("./database")
         if self._check_db():
             print(f"Connecting to {self.db_name}.db")
-            self.db = sql3.connect(f"./database/{self.db_name}.db")
         else:
-            print("Database is not Reachable")
+            print(f"Generating {self.db_name}.db")
+        self.db = sql3.connect(f"./database/{self.db_name}.db")
 
     # PLACEHOLDER!
     # ---
@@ -45,15 +46,7 @@ class generator(establish):
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
-        self.db_name = db_name
-        self.tables = []
-        if not os.path.exists("./database"):
-            os.makedirs("./database")
-        if self._check_db():
-            print(f"Connecting to {self.db_name}.db")
-        else:
-            print(f"Generating {self.db_name}.db")
-        self.db = sql3.connect(f"./database/{self.db_name}.db")
+        
 
     def add_table(self, tbl_name: str, col: dict) -> bool:
         """
@@ -258,3 +251,11 @@ class generator(establish):
             return True
         else:
             return False
+
+class operate(establish):
+
+    def __init__(self, db_name: str) -> None:
+        super().__init__(db_name)
+
+    def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool:
+        return True
