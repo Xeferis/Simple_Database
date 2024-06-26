@@ -11,13 +11,12 @@ def test_GitHub_action():
 def db():
     print("setup")
     gen_db = gen("test")
-    op_db = op("test_op")
+    op_db = op("test")
     yield {"gen": gen_db,"op": op_db}
     print("teardown")
     gen_db.close()
     op_db.close()
     os.remove("./database/test.db")
-    os.remove("./database/test_op.db")
     os.rmdir("./database")
 
 
@@ -159,7 +158,6 @@ def test_add_and_remove_table(db):
 
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
-    assert os.path.exists("./database/test_op.db") is True
 
 def test_fill_content_errors(db):
     excinfo = []
@@ -170,14 +168,47 @@ def test_fill_content_errors(db):
         ["test", 1],
         [{"test": 2}, 1]
         ]
+    db["gen"].add_table(
+                "error_test_tbl", {
+                        "F_ID": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "INTEGER",
+                            "mandatory": False,
+                            "foreignkey": (
+                                True,
+                                {
+                                    "table": "Test1",
+                                    "column": "ID"
+                                }
+                            )
+                        },
+                        "Title": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "CHAR(20)",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                    }
+            )
     # Type Errors
     for i, val in enumerate(test_vals):
         excinfo.append("")
-        with pytest.raises(TypeError) as excinfo[i]:  
-            db["op"].add_content("test_tbl", val)
+        with pytest.raises(TypeError) as excinfo[i]:
+            db["op"].add_content("error_test_tbl", val)
     for e_info in excinfo:
         assert str(e_info.value) == "Wrong Datatype given! dict or list of dict needed!"
-
+    
+    with pytest.raises(ConnectionError) as excinfo_cnct:  
+            db["op"].add_content("test_tbl", {"Test", "test"})
+    assert str(excinfo_cnct.value) == "Table does not exist or could not be found!"
 
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])

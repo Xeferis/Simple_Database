@@ -259,16 +259,20 @@ class operate_db(establish_db):
 
     def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool | TypeError:
         errors = [
-            TypeError("Wrong Datatype given! dict or list of dict needed!")
+            TypeError("Wrong Datatype given! dict or list of dict needed!"),
+            ConnectionError("Table does not exist or could not be found!")
         ]
-        if type(content) == dict:
-            pass
-        elif type(content) == list:
-            for elem in content:
-                if type(elem) == dict:
-                    pass
-                else:
-                    raise errors[0]
+        if self._check_tbl(tbl_name):
+            if type(content) == dict:
+                pass
+            elif type(content) == list:
+                for elem in content:
+                    if type(elem) == dict:
+                        pass
+                    else:
+                        raise errors[0]
+            else:
+                raise errors[0]
         else:
-            raise errors[0]
+            raise errors[1]
         return True
