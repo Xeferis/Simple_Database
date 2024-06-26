@@ -208,12 +208,14 @@ def test_fill_content_errors(db):
         excinfo.append("")
         with pytest.raises(TypeError) as excinfo[i]:
             db["op"].add_content("error_test_tbl", val)
+
     for e_info in excinfo:
         assert str(e_info.value) == \
             "Wrong Datatype given! dict or list of dict needed!"
 
     with pytest.raises(ConnectionError) as excinfo_cnct:
         db["op"].add_content("test_tbl", {"Title", "test"})
+
     assert str(excinfo_cnct.value) == \
         "Table does not exist or could not be found!"
 
