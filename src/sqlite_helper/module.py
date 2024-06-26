@@ -257,7 +257,7 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool | TypeError:
+    def add_content(self, tbl_name: str, content: dict | list[dict]) -> None | TypeError:
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!")
@@ -275,4 +275,3 @@ class operate_db(establish_db):
                 raise errors[0]
         else:
             raise errors[1]
-        return True
