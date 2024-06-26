@@ -166,24 +166,24 @@ def test_fill_content_errors(db):
         1,
         [2, 3],
         ["test", 1],
-        [{"test": 2}, 1]
+        [{"name": "test"}, 1]
         ]
     db["gen"].add_table(
                 "error_test_tbl", {
-                        "F_ID": {
-                            "primarykey": False,
-                            "autoincrement": False,
+                        "ID": {
+                            "primarykey": True,
+                            "autoincrement": True,
                             "type": "INTEGER",
                             "mandatory": False,
                             "foreignkey": (
-                                True,
+                                False,
                                 {
-                                    "table": "Test1",
-                                    "column": "ID"
+                                    "table": "",
+                                    "column": ""
                                 }
                             )
                         },
-                        "Title": {
+                        "name": {
                             "primarykey": False,
                             "autoincrement": False,
                             "type": "CHAR(20)",
@@ -214,16 +214,16 @@ def test_fill_content_errors(db):
 def test_table_content(db):
     db["gen"].add_table(
                 "test_content_tbl", {
-                        "F_ID": {
-                            "primarykey": False,
-                            "autoincrement": False,
+                        "ID": {
+                            "primarykey": True,
+                            "autoincrement": True,
                             "type": "INTEGER",
                             "mandatory": False,
                             "foreignkey": (
-                                True,
+                                False,
                                 {
-                                    "table": "Test1",
-                                    "column": "ID"
+                                    "table": "",
+                                    "column": ""
                                 }
                             )
                         },
@@ -242,12 +242,12 @@ def test_table_content(db):
                         },
                     }
             )
-    db["op"].add_content("test_content_tbl", {"Title", "test"})
+    db["op"].add_content("test_content_tbl", {"Title": "test"})
     db["op"].add_content("test_content_tbl", [
-                                    {"Title", "test1"},
-                                    {"Title", "test1"},
-                                    {"Title", "test1"},
-                                    {"Title", "test1"}
+                                    {"Title": "test1"},
+                                    {"Title": "test2"},
+                                    {"Title": "test3"},
+                                    {"Title": "test4"}
                                     ])
     assert False
 

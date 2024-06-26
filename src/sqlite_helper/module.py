@@ -253,39 +253,35 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str, content: dict | list[dict]) -> None | TypeError:
+    def add_content(self, tbl_name: str, cntnt: dict | list[dict]) -> None | TypeError:
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!")
         ]
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
-            if type(content) == dict:
+            if type(cntnt) == dict:
                 sql_stmnt = f"""
-                    INSERT INTO
-                    {tbl_name}
-                    (
-                        {list(content.keys())}
-                    )
-                    VALUES (
-                        {list(content.values())}
-                    );
-                    """
-                cur.execute(sql_stmnt)
-            elif type(content) == list:
-                for elem in content:
+                        INSERT INTO
+                        {tbl_name}
+                        ({",".join(list(cntnt.keys()))})
+                        VALUES (
+                            {','.join(['?' for x in cntnt.values()])}
+                        );
+                        """
+                cur.execute(sql_stmnt, list(cntnt.values()))
+            elif type(cntnt) == list:
+                for elem in cntnt:
                     if type(elem) == dict:
                         sql_stmnt = f"""
                                 INSERT INTO
                                 {tbl_name}
-                                (
-                                    {list(elem.keys())}
-                                )
+                                ({",".join(list(elem.keys()))})
                                 VALUES (
-                                    {list(elem.values())}
+                                    {','.join(['?' for x in elem.values()])}
                                 );
                                 """
-                        cur.execute(sql_stmnt)
+                        cur.execute(sql_stmnt, list(elem.values()))
                     else:
                         raise errors[0]
             else:
