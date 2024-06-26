@@ -4,15 +4,17 @@ import pytest
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 from sqlite_helper import generate_db as gen, operate_db as op
 
+
 def test_GitHub_action():
     assert True
+
 
 @pytest.fixture()
 def db():
     print("setup")
     gen_db = gen("test")
     op_db = op("test")
-    yield {"gen": gen_db,"op": op_db}
+    yield {"gen": gen_db, "op": op_db}
     print("teardown")
     gen_db.close()
     op_db.close()
@@ -148,16 +150,19 @@ def test_add_and_remove_table(db):
     # Tabelle hinzufügen
     result = db["gen"].add_table(table_name, columns)
     assert result, "Die Tabelle wurde nicht erfolgreich hinzugefügt"
-    assert table_name in db["gen"].tables, "Die Tabelle ist nicht in der internen Tabelle-Liste"
+    assert table_name in db["gen"].tables, \
+        "Die Tabelle ist nicht in der internen Tabelle-Liste"
 
     # Tabelle entfernen
     result = db["gen"].remove_table(table_name)
     assert result, "Die Tabelle wurde nicht erfolgreich entfernt"
-    assert table_name not in db["gen"].tables, "Die Tabelle ist noch in der internen Tabelle-Liste"
+    assert table_name not in db["gen"].tables, \
+        "Die Tabelle ist noch in der internen Tabelle-Liste"
 
 
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
+
 
 def test_fill_content_errors(db):
     excinfo = []
@@ -204,11 +209,14 @@ def test_fill_content_errors(db):
         with pytest.raises(TypeError) as excinfo[i]:
             db["op"].add_content("error_test_tbl", val)
     for e_info in excinfo:
-        assert str(e_info.value) == "Wrong Datatype given! dict or list of dict needed!"
-    
-    with pytest.raises(ConnectionError) as excinfo_cnct:  
-            db["op"].add_content("test_tbl", {"Title", "test"})
-    assert str(excinfo_cnct.value) == "Table does not exist or could not be found!"
+        assert str(e_info.value) == \
+            "Wrong Datatype given! dict or list of dict needed!"
+
+    with pytest.raises(ConnectionError) as excinfo_cnct:
+        db["op"].add_content("test_tbl", {"Title", "test"})
+    assert str(excinfo_cnct.value) == \
+        "Table does not exist or could not be found!"
+
 
 def test_table_column_comparision(db):
     db["gen"].add_table(
@@ -311,9 +319,13 @@ def test_table_column_comparision(db):
                     }
             )
     assert db["op"]._compare_cols("test_clmn1", ["Title"])
-    assert db["op"]._compare_cols("test_clmn1", ["Title", "Name", "Age", "Birth"])
+    assert db["op"]._compare_cols("test_clmn1", ["Title", "Name",
+                                                 "Age", "Birth"])
 
-@pytest.mark.skip(reason="Current Placeholder. 'get_content' function needed first!")
+
+@pytest.mark.skip(
+        reason="Current Placeholder. 'get_content' function needed first!"
+        )
 def test_table_content(db):
     db["gen"].add_table(
                 "test_content_tbl", {
@@ -353,6 +365,7 @@ def test_table_content(db):
                                     {"Title": "test4"}
                                     ])
     assert False
+
 
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])

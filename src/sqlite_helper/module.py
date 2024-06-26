@@ -1,6 +1,7 @@
 import os
 import sqlite3 as sql3
 
+
 class establish_db():
 
     def __init__(self, db_name: str) -> None:
@@ -20,7 +21,8 @@ class establish_db():
     def _check_tbl(self, tbl_name) -> bool:
         cur = self.db.cursor()
         sql_stmnt = f"""
-                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='{tbl_name}';
                 """
         res = cur.execute(sql_stmnt)
         if res.fetchone() is None:
@@ -40,7 +42,6 @@ class generate_db(establish_db):
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
-        
 
     def add_table(self, tbl_name: str, col: dict) -> bool:
         """
@@ -246,12 +247,14 @@ class generate_db(establish_db):
         else:
             return False
 
+
 class operate_db(establish_db):
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str, cntct: dict | list[dict], with_foreign_Key: bool | list = False) -> None | TypeError | ConnectionError | LookupError:    
+    def add_content(self, tbl_name: str, cntct: dict | list[dict],
+                    with_foreign_Key: bool | list = False) -> None:
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!"),
@@ -262,13 +265,13 @@ class operate_db(establish_db):
         cur = self.db.cursor()
         if not with_foreign_Key:
             pass
-        elif type(with_foreign_Key)==list:
+        elif type(with_foreign_Key) is list:
             # "search_table" function is needed first!
             raise errors[3]
         else:
             raise errors[3]
         if self._check_tbl(tbl_name):
-            if type(cntct) == dict:
+            if type(cntct) is dict:
                 if not self._compare_cols(tbl_name, list(cntct.keys())):
                     raise errors[4]
                 sql_stmnt = f"""
@@ -280,9 +283,9 @@ class operate_db(establish_db):
                         );
                         """
                 cur.execute(sql_stmnt, list(cntct.values()))
-            elif type(cntct) == list:
+            elif type(cntct) is list:
                 for elem in cntct:
-                    if type(elem) == dict:
+                    if type(elem) is dict:
                         if not self._compare_cols(tbl_name, list(elem.keys())):
                             raise errors[4]
                         sql_stmnt = f"""
@@ -312,5 +315,5 @@ class operate_db(establish_db):
             if pk != 1:
                 if name != clmns[i]:
                     return False
-                i+=1
+                i += 1
         return True
