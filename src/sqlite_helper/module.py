@@ -16,12 +16,8 @@ class establish_db():
             print(f"Generating {self.db_name}.db")
         self.db = sql3.connect(f"./database/{self.db_name}.db")
 
-    # PLACEHOLDER!
-    # ---
     def _check_db(self) -> bool:
-        exst = False
-        return exst
-    # ---
+        return os.path.exists(f"./database/{self.db_name}.db")
 
     def _check_tbl(self, tbl_name) -> bool:
         cur = self.db.cursor()
@@ -279,7 +275,17 @@ class operate_db(establish_db):
             elif type(content) == list:
                 for elem in content:
                     if type(elem) == dict:
-                        pass
+                        sql_stmnt = f"""
+                                INSERT INTO
+                                {tbl_name}
+                                (
+                                    {list(elem.keys())}
+                                )
+                                VALUES (
+                                    {list(elem.values())}
+                                );
+                                """
+                        cur.execute(sql_stmnt)
                     else:
                         raise errors[0]
             else:

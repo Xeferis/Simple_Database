@@ -207,11 +207,48 @@ def test_fill_content_errors(db):
         assert str(e_info.value) == "Wrong Datatype given! dict or list of dict needed!"
     
     with pytest.raises(ConnectionError) as excinfo_cnct:  
-            db["op"].add_content("test_tbl", {"Test", "test"})
+            db["op"].add_content("test_tbl", {"Title", "test"})
     assert str(excinfo_cnct.value) == "Table does not exist or could not be found!"
 
 @pytest.mark.skip(reason="Current Placeholder. 'get_content' function needed first!")
 def test_table_content(db):
+    db["gen"].add_table(
+                "test_content_tbl", {
+                        "F_ID": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "INTEGER",
+                            "mandatory": False,
+                            "foreignkey": (
+                                True,
+                                {
+                                    "table": "Test1",
+                                    "column": "ID"
+                                }
+                            )
+                        },
+                        "Title": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "CHAR(20)",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                    }
+            )
+    db["op"].add_content("test_content_tbl", {"Title", "test"})
+    db["op"].add_content("test_content_tbl", [
+                                    {"Title", "test1"},
+                                    {"Title", "test1"},
+                                    {"Title", "test1"},
+                                    {"Title", "test1"}
+                                    ])
     assert False
 
 if __name__ == "__main__":
