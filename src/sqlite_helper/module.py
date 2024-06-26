@@ -3,7 +3,7 @@ import sqlite3 as sql3
 from typing import Union
 
 
-class establish():
+class establish_db():
 
     def __init__(self, db_name: str) -> None:
         self.db_name = db_name
@@ -42,7 +42,7 @@ class establish():
         self.db.close()
 
 
-class generator(establish):
+class generate_db(establish_db):
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
@@ -252,7 +252,7 @@ class generator(establish):
         else:
             return False
 
-class operate(establish):
+class operate_db(establish_db):
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)

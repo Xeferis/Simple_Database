@@ -2,8 +2,7 @@ import sys
 import os
 import pytest
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
-from sqlite_helper import generator as gen
-
+from sqlite_helper import generate_db as gen, operate_db as op
 
 def test_GitHub_action():
     assert True
@@ -12,10 +11,13 @@ def test_GitHub_action():
 def db():
     print("setup")
     db = gen("test")
+    op_db = op("test_op")
     yield db
     print("teardown")
     db.close()
+    op_db.close()
     os.remove("./database/test.db")
+    os.remove("./database/test_op.db")
     os.rmdir("./database")
 
 
