@@ -10,11 +10,11 @@ def test_GitHub_action():
 @pytest.fixture()
 def db():
     print("setup")
-    db = gen("test")
+    gen_db = gen("test")
     op_db = op("test_op")
-    yield db
+    yield {"gen": gen_db,"op": op_db}
     print("teardown")
-    db.close()
+    gen_db.close()
     op_db.close()
     os.remove("./database/test.db")
     os.remove("./database/test_op.db")
@@ -22,11 +22,11 @@ def db():
 
 
 def test_naming(db):
-    assert db.db_name == "test"
+    assert db["gen"].db_name == "test"
 
 
 def test_addTable(db):
-    db.add_table(
+    db["gen"].add_table(
         "Test", {
             "ID": {
                 "primarykey": True,
@@ -82,7 +82,7 @@ def test_addTable(db):
             }
         }
     )
-    db.add_table(
+    db["gen"].add_table(
         "Test2", {
             "F_ID": {
                 "primarykey": False,
@@ -112,7 +112,7 @@ def test_addTable(db):
             },
         }
     )
-    assert db.tables == ["Test", "Test2"]
+    assert db["gen"].tables == ["Test", "Test2"]
 
 
 def test_add_and_remove_table(db):
@@ -147,18 +147,19 @@ def test_add_and_remove_table(db):
         }
 
     # Tabelle hinzufügen
-    result = db.add_table(table_name, columns)
+    result = db["gen"].add_table(table_name, columns)
     assert result, "Die Tabelle wurde nicht erfolgreich hinzugefügt"
-    assert table_name in db.tables, "Die Tabelle ist nicht in der internen Tabelle-Liste"
+    assert table_name in db["gen"].tables, "Die Tabelle ist nicht in der internen Tabelle-Liste"
 
     # Tabelle entfernen
-    result = db.remove_table(table_name)
+    result = db["gen"].remove_table(table_name)
     assert result, "Die Tabelle wurde nicht erfolgreich entfernt"
-    assert table_name not in db.tables, "Die Tabelle ist noch in der internen Tabelle-Liste"
+    assert table_name not in db["gen"].tables, "Die Tabelle ist noch in der internen Tabelle-Liste"
 
 
 def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
+    assert os.path.exists("./database/test_op.db") is True
 
 
 if __name__ == "__main__":
