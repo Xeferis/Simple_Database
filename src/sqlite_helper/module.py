@@ -305,6 +305,15 @@ class operate_db(establish_db):
             raise errors[1]
 
     def _compare_cols(self, tbl_name: str, clmns: list) -> bool:
+        """Comparing input columns with the destination Table
+
+        Args:
+            tbl_name (str): Table you want to compare to
+            clmns (list): List of actual columns to compare
+
+        Returns:
+            bool: if columns match return true else false
+        """
         i = 0
         cur = self.db.cursor()
         cur.execute(f"PRAGMA table_info({tbl_name});")
