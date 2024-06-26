@@ -258,4 +258,10 @@ class operate(establish):
         super().__init__(db_name)
 
     def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool:
+        if type(content) == dict:
+            pass
+        elif type(content) == list:
+            pass
+        else:
+            raise TypeError("Wrong Datatype given! dict or list of dict needed!")
         return True
