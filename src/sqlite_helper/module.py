@@ -269,7 +269,7 @@ class operate_db(establish_db):
             raise errors[3]
         if self._check_tbl(tbl_name):
             if type(cntct) == dict:
-                if not self.__compare_cols(tbl_name, list(cntct.keys())):
+                if not self._compare_cols(tbl_name, list(cntct.keys())):
                     raise errors[4]
                 sql_stmnt = f"""
                         INSERT INTO
@@ -283,7 +283,7 @@ class operate_db(establish_db):
             elif type(cntct) == list:
                 for elem in cntct:
                     if type(elem) == dict:
-                        if not self.__compare_cols(tbl_name, list(elem.keys())):
+                        if not self._compare_cols(tbl_name, list(elem.keys())):
                             raise errors[4]
                         sql_stmnt = f"""
                                 INSERT INTO
@@ -301,7 +301,7 @@ class operate_db(establish_db):
         else:
             raise errors[1]
 
-    def __compare_cols(self, tbl_name: str, clmns: list) -> bool:
+    def _compare_cols(self, tbl_name: str, clmns: list) -> bool:
         i = 0
         cur = self.db.cursor()
         cur.execute(f"PRAGMA table_info({tbl_name});")

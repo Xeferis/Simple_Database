@@ -210,6 +210,109 @@ def test_fill_content_errors(db):
             db["op"].add_content("test_tbl", {"Title", "test"})
     assert str(excinfo_cnct.value) == "Table does not exist or could not be found!"
 
+def test_table_column_comparision(db):
+    db["gen"].add_table(
+                "test_clmn1", {
+                        "ID": {
+                            "primarykey": True,
+                            "autoincrement": True,
+                            "type": "INTEGER",
+                            "mandatory": False,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                        "Title": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "CHAR(20)",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                    }
+            )
+    db["gen"].add_table(
+                "test_clmn2", {
+                        "ID": {
+                            "primarykey": True,
+                            "autoincrement": True,
+                            "type": "INTEGER",
+                            "mandatory": False,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                        "Title": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "CHAR(20)",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                        "Name": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "CHAR(20)",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                        "Age": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "INT",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        },
+                        "Birth": {
+                            "primarykey": False,
+                            "autoincrement": False,
+                            "type": "DATE",
+                            "mandatory": True,
+                            "foreignkey": (
+                                False,
+                                {
+                                    "table": "",
+                                    "column": ""
+                                }
+                            )
+                        }
+                    }
+            )
+    assert db["op"]._compare_cols("test_clmn1", ["Title"])
+    assert db["op"]._compare_cols("test_clmn1", ["Title", "Name", "Age", "Birth"])
+
 @pytest.mark.skip(reason="Current Placeholder. 'get_content' function needed first!")
 def test_table_content(db):
     db["gen"].add_table(
