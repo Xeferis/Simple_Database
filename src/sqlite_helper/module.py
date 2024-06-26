@@ -1,7 +1,5 @@
 import os
 import sqlite3 as sql3
-from typing import Union
-
 
 class establish_db():
 
@@ -253,14 +251,21 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str,
-                    cntnt: dict | list[dict],
-                    with_foreign_Key: bool | list = False) -> None | TypeError:
+    def add_content(self, tbl_name: str, cntnt: dict | list[dict], with_foreign_Key: bool | list = False) -> None | TypeError | ConnectionError | LookupError:    
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
-            ConnectionError("Table does not exist or could not be found!")
+            ConnectionError("Table does not exist or could not be found!"),
+            LookupError("Foreignkey does not exist or could not be found!"),
+            TypeError("Wrong Datatype given! bool or list needed!")
         ]
         cur = self.db.cursor()
+        if not with_foreign_Key:
+            pass
+        elif type(with_foreign_Key)==list:
+            # "search_table" function is needed first!
+            raise errors[3]
+        else:
+            raise errors[3]
         if self._check_tbl(tbl_name):
             if type(cntnt) == dict:
                 sql_stmnt = f"""
