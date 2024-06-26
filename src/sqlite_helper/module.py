@@ -2,18 +2,46 @@ import os
 import sqlite3 as sql3
 
 
-class generator():
+class establish_db():
 
     def __init__(self, db_name: str) -> None:
         self.db_name = db_name
         self.tables = []
         if not os.path.exists("./database"):
             os.makedirs("./database")
-        if self.__check_db():
+        if self._check_db():
             print(f"Connecting to {self.db_name}.db")
         else:
             print(f"Generating {self.db_name}.db")
         self.db = sql3.connect(f"./database/{self.db_name}.db")
+
+    def _check_db(self) -> bool:
+        return os.path.exists(f"./database/{self.db_name}.db")
+
+    def _check_tbl(self, tbl_name) -> bool:
+        cur = self.db.cursor()
+        sql_stmnt = f"""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='{tbl_name}';
+                """
+        res = cur.execute(sql_stmnt)
+        if res.fetchone() is None:
+            print("Tabelle ist nicht vorhanden")
+            cur.close()
+            return False
+        else:
+            cur.close()
+            print("Tabelle ist vorhanden")
+            return True
+
+    def close(self):
+        self.db.close()
+
+
+class generate_db(establish_db):
+
+    def __init__(self, db_name: str) -> None:
+        super().__init__(db_name)
 
     def add_table(self, tbl_name: str, col: dict) -> bool:
         """
@@ -56,9 +84,9 @@ class generator():
         sql_stmnt = f"""
                     DROP TABLE {tbl_name};
                     """
-        if self.__check_tbl(tbl_name):
+        if self._check_tbl(tbl_name):
             cur.execute(sql_stmnt)
-            if not self.__check_tbl(tbl_name):
+            if not self._check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
         return False
@@ -219,38 +247,82 @@ class generator():
         else:
             return False
 
-    # PLACEHOLDER!
-    # ---
-    def __check_db(self) -> bool:
-        exst = False
-        return exst
-    # ---
 
-    def __check_tbl(self, tbl_name) -> bool:
-        cur = self.db.cursor()
-        sql_stmnt = f"""
-                SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
-                """
-        res = cur.execute(sql_stmnt)
-        if res.fetchone() is None:
-            print("Tabelle ist nicht vorhanden")
-            cur.close()
-            return False
-        else:
-            cur.close()
-            print("Tabelle ist vorhanden")
-            return True
-
-    def close(self):
-        self.db.close()
-
-
-class establish():
+class operate_db(establish_db):
 
     def __init__(self, db_name: str) -> None:
-        pass
+        super().__init__(db_name)
+
+    def add_content(self, tbl_name: str, cntct: dict | list[dict],
+                    with_foreign_Key: bool | list = False) -> None:
+        errors = [
+            TypeError("Wrong Datatype given! dict or list of dict needed!"),
+            ConnectionError("Table does not exist or could not be found!"),
+            LookupError("Foreignkey does not exist or could not be found!"),
+            TypeError("Wrong Datatype given! bool or list needed!"),
+            LookupError("Columns do not match destination table!")
+        ]
+        cur = self.db.cursor()
+        if not with_foreign_Key:
+            pass
+        elif type(with_foreign_Key) is list:
+            # "search_table" function is needed first!
+            raise errors[3]
+        else:
+            raise errors[3]
+        if self._check_tbl(tbl_name):
+            if type(cntct) is dict:
+                if not self._compare_cols(tbl_name, list(cntct.keys())):
+                    raise errors[4]
+                sql_stmnt = f"""
+                        INSERT INTO
+                        {tbl_name}
+                        ({",".join(list(cntct.keys()))})
+                        VALUES (
+                            {','.join(['?' for x in cntct.values()])}
+                        );
+                        """
+                cur.execute(sql_stmnt, list(cntct.values()))
+            elif type(cntct) is list:
+                for elem in cntct:
+                    if type(elem) is dict:
+                        if not self._compare_cols(tbl_name, list(elem.keys())):
+                            raise errors[4]
+                        sql_stmnt = f"""
+                                INSERT INTO
+                                {tbl_name}
+                                ({",".join(list(elem.keys()))})
+                                VALUES (
+                                    {','.join(['?' for x in elem.values()])}
+                                );
+                                """
+                        cur.execute(sql_stmnt, list(elem.values()))
+                    else:
+                        raise errors[0]
+            else:
+                raise errors[0]
+        else:
+            raise errors[1]
+
+    def _compare_cols(self, tbl_name: str, clmns: list) -> bool:
+        """Comparing input columns with the destination Table
+
+        Args:
+            tbl_name (str): Table you want to compare to
+            clmns (list): List of actual columns to compare
+
+        Returns:
+            bool: if columns match return true else false
         """
-        if not __check_db(db_name):
-            raise ConnectionError("Database does not exist.
-            Check name or generate a database first!")
-        """
+        i = 0
+        cur = self.db.cursor()
+        cur.execute(f"PRAGMA table_info({tbl_name});")
+        actual_cols = cur.fetchall()
+        print(actual_cols)
+        for col in actual_cols:
+            pos, name, data_type, notnull, dflt, pk = col
+            if pk != 1:
+                if name != clmns[i]:
+                    return False
+                i += 1
+        return True
