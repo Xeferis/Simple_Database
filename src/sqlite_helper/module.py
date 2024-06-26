@@ -251,12 +251,13 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str, cntnt: dict | list[dict], with_foreign_Key: bool | list = False) -> None | TypeError | ConnectionError | LookupError:    
+    def add_content(self, tbl_name: str, cntct: dict | list[dict], with_foreign_Key: bool | list = False) -> None | TypeError | ConnectionError | LookupError:    
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!"),
             LookupError("Foreignkey does not exist or could not be found!"),
-            TypeError("Wrong Datatype given! bool or list needed!")
+            TypeError("Wrong Datatype given! bool or list needed!"),
+            LookupError("Columns do not match destination table!")
         ]
         cur = self.db.cursor()
         if not with_foreign_Key:
@@ -267,19 +268,23 @@ class operate_db(establish_db):
         else:
             raise errors[3]
         if self._check_tbl(tbl_name):
-            if type(cntnt) == dict:
+            if type(cntct) == dict:
+                if not self.__compare_cols(tbl_name, list(cntct.keys())):
+                    raise errors[4]
                 sql_stmnt = f"""
                         INSERT INTO
                         {tbl_name}
-                        ({",".join(list(cntnt.keys()))})
+                        ({",".join(list(cntct.keys()))})
                         VALUES (
-                            {','.join(['?' for x in cntnt.values()])}
+                            {','.join(['?' for x in cntct.values()])}
                         );
                         """
-                cur.execute(sql_stmnt, list(cntnt.values()))
-            elif type(cntnt) == list:
-                for elem in cntnt:
+                cur.execute(sql_stmnt, list(cntct.values()))
+            elif type(cntct) == list:
+                for elem in cntct:
                     if type(elem) == dict:
+                        if not self.__compare_cols(tbl_name, list(elem.keys())):
+                            raise errors[4]
                         sql_stmnt = f"""
                                 INSERT INTO
                                 {tbl_name}
@@ -295,3 +300,17 @@ class operate_db(establish_db):
                 raise errors[0]
         else:
             raise errors[1]
+
+    def __compare_cols(self, tbl_name: str, clmns: list) -> bool:
+        i = 0
+        cur = self.db.cursor()
+        cur.execute(f"PRAGMA table_info({tbl_name});")
+        actual_cols = cur.fetchall()
+        print(actual_cols)
+        for col in actual_cols:
+            pos, name, data_type, notnull, dflt, pk = col
+            if pk != 1:
+                if name != clmns[i]:
+                    return False
+                i+=1
+        return True
