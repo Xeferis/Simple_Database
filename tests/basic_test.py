@@ -170,6 +170,7 @@ def test_fill_content_errors(db):
         ["test", 1],
         [{"test": 2}, 1]
         ]
+    # Type Errors
     for i, val in enumerate(test_vals):
         excinfo.append("")
         with pytest.raises(TypeError) as excinfo[i]:  
