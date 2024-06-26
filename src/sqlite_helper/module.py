@@ -9,7 +9,7 @@ class establish():
         self.tables = []
         if not os.path.exists("./database"):
             os.makedirs("./database")
-        if self.__check_db():
+        if self._check_db():
             print(f"Connecting to {self.db_name}.db")
             self.db = sql3.connect(f"./database/{self.db_name}.db")
         else:
@@ -17,12 +17,12 @@ class establish():
 
     # PLACEHOLDER!
     # ---
-    def __check_db(self) -> bool:
+    def _check_db(self) -> bool:
         exst = False
         return exst
     # ---
 
-    def __check_tbl(self, tbl_name) -> bool:
+    def _check_tbl(self, tbl_name) -> bool:
         cur = self.db.cursor()
         sql_stmnt = f"""
                 SELECT name FROM sqlite_master WHERE type='table' AND name='{tbl_name}';
@@ -49,7 +49,7 @@ class generator(establish):
         self.tables = []
         if not os.path.exists("./database"):
             os.makedirs("./database")
-        if self._establish__check_db():
+        if self._check_db():
             print(f"Connecting to {self.db_name}.db")
         else:
             print(f"Generating {self.db_name}.db")
@@ -96,9 +96,9 @@ class generator(establish):
         sql_stmnt = f"""
                     DROP TABLE {tbl_name};
                     """
-        if self._establish__check_tbl(tbl_name):
+        if self._check_tbl(tbl_name):
             cur.execute(sql_stmnt)
-            if not self._establish__check_tbl(tbl_name):
+            if not self._check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
         return False
