@@ -262,9 +262,20 @@ class operate_db(establish_db):
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!")
         ]
+        cur = self.db.cursor()
         if self._check_tbl(tbl_name):
             if type(content) == dict:
-                pass
+                sql_stmnt = f"""
+                    INSERT INTO
+                    {tbl_name}
+                    (
+                        {list(content.keys())}
+                    )
+                    VALUES (
+                        {list(content.values())}
+                    );
+                    """
+                cur.execute(sql_stmnt)
             elif type(content) == list:
                 for elem in content:
                     if type(elem) == dict:
