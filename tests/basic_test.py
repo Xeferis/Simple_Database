@@ -162,9 +162,20 @@ def test_db_gen(db):
     assert os.path.exists("./database/test_op.db") is True
 
 def test_fill_content_errors(db):
-    with pytest.raises(TypeError) as excinfo:  
-        db["op"].add_content("test_tbl", "placeholder content")
-    assert str(excinfo.value) == "Wrong Datatype given! dict or list of dict needed!"
+    excinfo = []
+    test_vals = [
+        "placeholder content",
+        1,
+        [2, 3],
+        ["test", 1],
+        [{"test": 2}, 1]
+        ]
+    for i, val in enumerate(test_vals):
+        excinfo.append("")
+        with pytest.raises(TypeError) as excinfo[i]:  
+            db["op"].add_content("test_tbl", val)
+    for e_info in excinfo:
+        assert str(e_info.value) == "Wrong Datatype given! dict or list of dict needed!"
 
 
 if __name__ == "__main__":
