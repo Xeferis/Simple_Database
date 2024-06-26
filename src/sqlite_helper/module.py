@@ -257,7 +257,7 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
-    def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool:
+    def add_content(self, tbl_name: str, content: dict | list[dict]) -> bool | TypeError:
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!")
         ]

@@ -161,6 +161,11 @@ def test_db_gen(db):
     assert os.path.exists("./database/test.db") is True
     assert os.path.exists("./database/test_op.db") is True
 
+def test_fill_content_errors(db):
+    with pytest.raises(TypeError) as excinfo:  
+        db["op"].add_content("test_tbl", "placeholder content")
+    assert str(excinfo.value) == "Wrong Datatype given! dict or list of dict needed!"
+
 
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])
