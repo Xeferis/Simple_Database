@@ -253,6 +253,31 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
+    def get_content(self, tbl_name: str) -> list:
+        self.db.row_factory = sql3.Row
+        cur = self.db.cursor()
+        if self._check_tbl(tbl_name):
+            sql_stmnt = f"""
+                    SELECT * FROM {tbl_name};
+                    """
+            cur.execute(sql_stmnt)
+            return cur.fetchall()
+        else:
+            return []
+
+    def search_table(self, tbl_name: str, search: dict) -> list:
+        self.db.row_factory = sql3.Row
+        cur = self.db.cursor()
+        if self._check_tbl(tbl_name):
+            sql_stmnt = f"""
+                    SELECT * FROM {tbl_name}
+                    WHERE {list(search.keys())[0]} = ?;
+                    """
+            cur.execute(sql_stmnt, list(search.values()))
+            return cur.fetchall()
+        else:
+            return []
+
     def add_content(self, tbl_name: str, cntct: dict | list[dict],
                     with_foreign_Key: bool | list = False) -> None:
         errors = [
