@@ -73,6 +73,7 @@ class generate_db(establish_db):
                     );
                     """
         res = cur.execute(sql_stmnt)
+        self.db.commit()
         if res.fetchone is None:
             return False
         else:
@@ -86,6 +87,7 @@ class generate_db(establish_db):
                     """
         if self._check_tbl(tbl_name):
             cur.execute(sql_stmnt)
+            self.db.commit()
             if not self._check_tbl(tbl_name):
                 self.tables.remove(tbl_name)
                 return True
@@ -287,38 +289,58 @@ class operate_db(establish_db):
         else:
             return []
 
-    def add_content(self, tbl_name: str, cntct: dict | list[dict],
+    def add_content(self, tbl_name: str, cntnt: dict | list[dict],
                     with_foreign_Key: bool | list = False) -> None:
+        """
+        
+        with_foreign_Key: bool | list = False
+        if is list:
+            list[0] = "table": str
+            list[1] = {"column": str, "pos_in_cntnt": int}
+        """
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
             ConnectionError("Table does not exist or could not be found!"),
             LookupError("Foreignkey does not exist or could not be found!"),
             TypeError("Wrong Datatype given! bool or list needed!"),
-            LookupError("Columns do not match destination table!")
+            LookupError("Columns do not match destination table!"),
+            LookupError("Foreignkey does not exist or could not be found!")
         ]
         cur = self.db.cursor()
         if not with_foreign_Key:
             pass
-        elif type(with_foreign_Key) is list:
-            # "search_table" function is needed first!
-            raise errors[3]
+        elif type(with_foreign_Key) is list and type(cntnt) is dict:
+            result = self.search_table(with_foreign_Key[0],
+                                       {
+                                           with_foreign_Key[1]["column"]: cntnt[list(cntnt.keys())[with_foreign_Key[1]["pos_in_cntnt"]]]
+                                           })
+            if not result:
+                raise errors[5]
+        elif type(with_foreign_Key) is list and type(cntnt) is list:
+            for d in cntnt:
+                result = self.search_table(with_foreign_Key[0],
+                                        {
+                                            with_foreign_Key[1]["column"]: d[list(d.keys())[with_foreign_Key[1]["pos_in_cntnt"]]]
+                                            })
+                if not result:
+                    raise errors[5]
         else:
             raise errors[3]
         if self._check_tbl(tbl_name):
-            if type(cntct) is dict:
-                if not self._compare_cols(tbl_name, list(cntct.keys())):
+            if type(cntnt) is dict:
+                if not self._compare_cols(tbl_name, list(cntnt.keys())):
                     raise errors[4]
                 sql_stmnt = f"""
                         INSERT INTO
                         {tbl_name}
-                        ({",".join(list(cntct.keys()))})
+                        ({",".join(list(cntnt.keys()))})
                         VALUES (
-                            {','.join(['?' for x in cntct.values()])}
+                            {','.join(['?' for x in cntnt.values()])}
                         );
                         """
-                cur.execute(sql_stmnt, list(cntct.values()))
-            elif type(cntct) is list:
-                for elem in cntct:
+                cur.execute(sql_stmnt, list(cntnt.values()))
+            elif type(cntnt) is list:
+                for elem in cntnt:
                     if type(elem) is dict:
                         if not self._compare_cols(tbl_name, list(elem.keys())):
                             raise errors[4]
@@ -353,7 +375,6 @@ class operate_db(establish_db):
         cur = self.db.cursor()
         cur.execute(f"PRAGMA table_info({tbl_name});")
         actual_cols = cur.fetchall()
-        print(actual_cols)
         for col in actual_cols:
             pos, name, data_type, notnull, dflt, pk = col
             if pk != 1:
