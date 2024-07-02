@@ -253,6 +253,15 @@ class operate_db(establish_db):
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
+    def del_content(self, tbl_name: str, search: dict) -> None:
+        cur = self.db.cursor()
+        if self._check_tbl(tbl_name):
+            sql_stmnt = f"""
+                    DELETE FROM {tbl_name}
+                    WHERE {list(search.keys())[0]} = ?;
+                    """
+            cur.execute(sql_stmnt, list(search.values()))
+
     def get_content(self, tbl_name: str) -> list:
         self.db.row_factory = sql3.Row
         cur = self.db.cursor()
@@ -328,6 +337,7 @@ class operate_db(establish_db):
                 raise errors[0]
         else:
             raise errors[1]
+        self.db.commit()
 
     def _compare_cols(self, tbl_name: str, clmns: list) -> bool:
         """Comparing input columns with the destination Table

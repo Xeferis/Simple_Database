@@ -384,9 +384,10 @@ def test_table_content(db):
     result = db["op"].get_content("test_content_tbl")
     expected_titles = ["test", "test1", "test2", "test3", "test4"]
     print(result)
-    assert len(result) == len(expected_titles)
+    assert len(result) == len(expected_titles), "Number of entries \
+                                                    is not correct!"
     for i, entry in enumerate(result):
-        assert entry["Title"] == expected_titles[i]
+        assert entry["Title"] == expected_titles[i], "Entry is not correct!"
 
 
 def test_get_content_existing_table(obj):
@@ -398,21 +399,41 @@ def test_get_content_existing_table(obj):
 def test_get_content_nonexistent_table(obj):
     obj._check_tbl = MagicMock(return_value=False)
     result = obj.get_content("nonexistent_table")
-    assert result == []
+    assert result == [], "The table does not exist, \
+                            so the result should be an empty list."
 
 
 def test_search_table_existing_table(obj):
     obj._check_tbl = MagicMock(return_value=True)
     search_query = {"column1": "value1"}
     result = obj.search_table("existing_table", search_query)
-    assert result == [{"column1": "value1"}]
+    assert result == [{"column1": "value1"}], "The search \
+                            query should return the correct result."
 
 
 def test_search_table_nonexistent_table(obj):
     obj._check_tbl = MagicMock(return_value=False)
     search_query = {"column1": "value1"}
     result = obj.search_table("nonexistent_table", search_query)
-    assert result == []
+    assert result == [], "The table does not exist, so the \
+                            result should be an empty list."
+
+
+def test_del_content(db):
+    cur = db["op"].db.cursor()
+    cur.execute('CREATE TABLE test_tbl (id INTEGER PRIMARY KEY, name TEXT)')
+
+    cur.executemany('INSERT INTO test_tbl (name) VALUES (?)',
+                    [('Alice',), ('Bob',), ('Charlie',)])
+    db["op"].db.commit()
+
+    db["op"].del_content('test_tbl', {'name': 'Bob'})
+    cur.execute('SELECT * FROM test_tbl WHERE name = ?', ('Bob',))
+    assert cur.fetchone() is None, "The entry was not deleted."
+
+    cur.execute('SELECT COUNT(*) FROM test_tbl')
+    count = cur.fetchone()[0]
+    assert count == 2, "The number of entries, after deletion, is not correct."
 
 
 if __name__ == "__main__":
