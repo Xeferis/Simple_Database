@@ -254,6 +254,7 @@ class operate_db(establish_db):
         super().__init__(db_name)
 
     def get_content(self, tbl_name: str) -> list:
+        self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
             sql_stmnt = f"""
@@ -265,6 +266,7 @@ class operate_db(establish_db):
             return []
 
     def search_table(self, tbl_name: str, search: dict) -> list:
+        self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
             sql_stmnt = f"""

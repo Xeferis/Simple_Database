@@ -342,9 +342,6 @@ def test_table_column_comparision(db):
                                                  "Age", "Birth"])
 
 
-@pytest.mark.skip(
-        reason="Current Placeholder. 'get_content' function needed first!"
-        )
 def test_table_content(db):
     db["gen"].add_table(
                 "test_content_tbl", {
@@ -383,7 +380,13 @@ def test_table_content(db):
                                     {"Title": "test3"},
                                     {"Title": "test4"}
                                     ])
-    assert False
+
+    result = db["op"].get_content("test_content_tbl")
+    expected_titles = ["test", "test1", "test2", "test3", "test4"]
+    print(result)
+    assert len(result) == len(expected_titles)
+    for i, entry in enumerate(result):
+        assert entry["Title"] == expected_titles[i]
 
 
 def test_get_content_existing_table(obj):
