@@ -415,5 +415,21 @@ def test_search_table_nonexistent_table(obj):
     assert result == []
 
 
+def test_del_content(db):
+    cur = db["op"].db.cursor()
+    cur.execute('CREATE TABLE test_tbl (id INTEGER PRIMARY KEY, name TEXT)')
+    # Testdaten einfügen
+    cur.executemany('INSERT INTO test_tbl (name) VALUES (?)', [('Alice',), ('Bob',), ('Charlie',)])
+    db["op"].db.commit()
+    # Löschen eines Eintrags
+    db["op"].del_content('test_tbl', {'name': 'Bob'})
+    # Überprüfen, ob der Eintrag gelöscht wurde
+    cur.execute('SELECT * FROM test_tbl WHERE name = ?', ('Bob',))
+    assert cur.fetchone() is None, "Der Eintrag 'Bob' wurde nicht korrekt gelöscht."
+    # Überprüfen, ob die anderen Einträge noch vorhanden sind
+    cur.execute('SELECT COUNT(*) FROM test_tbl')
+    count = cur.fetchone()[0]
+    assert count == 2, "Die Anzahl der Einträge nach dem Löschen ist nicht korrekt."
+
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])
