@@ -436,5 +436,185 @@ def test_del_content(db):
     assert count == 2, "The number of entries, after deletion, is not correct."
 
 
+def test_foreign_key_assignment(db):
+    db["gen"].add_table("foreign_key_table", {
+        "ID": {
+            "primarykey": True,
+            "autoincrement": True,
+            "type": "INTEGER",
+            "mandatory": False,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "name": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+    })
+    db["gen"].add_table("test_table", {
+        "ID": {
+            "primarykey": True,
+            "autoincrement": True,
+            "type": "INTEGER",
+            "mandatory": False,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "T_name": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "F_ID": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                True,
+                {
+                    "table": "foreign_key_table",
+                    "column": "ID"
+                }
+            )
+        },
+    })
+    db["op"].add_content("foreign_key_table", {"name": "foreign_key_test_value"})
+    tbl_name = "test_table"
+    foreign_key_table = "foreign_key_table"
+    content = {"T_name": "Foreignkeyrelation", "F_ID": 1}
+    foreign_key_info = [foreign_key_table, {"column": "ID", "pos_in_cntnt": 1}]
+
+    # Führen Sie die add_content Methode aus
+    db["op"].add_content(tbl_name, content, with_foreign_Key=foreign_key_info)
+
+    fk_table_content = db["op"].search_table(foreign_key_table, {"ID": 1})
+    assert fk_table_content is not None, "Foreign Key Eintrag existiert nicht in foreign_key_table."
+
+    # Überprüfen, ob der Eintrag in der test_table existiert und die Foreign Key Zuordnung korrekt ist
+    test_table_content = db["op"].search_table(tbl_name, {"F_ID": 1})
+    assert test_table_content is not None, "Eintrag existiert nicht in test_table oder Foreign Key Zuordnung ist inkorrekt."
+    assert test_table_content[0]["T_name"] == "Foreignkeyrelation", "T_name Wert stimmt nicht überein."
+
+
+def test_foreign_key_assignment_multiple(db):
+    db["gen"].add_table("foreign_key_table", {
+        "ID": {
+            "primarykey": True,
+            "autoincrement": True,
+            "type": "INTEGER",
+            "mandatory": False,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "name": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+    })
+    db["gen"].add_table("test_table", {
+        "ID": {
+            "primarykey": True,
+            "autoincrement": True,
+            "type": "INTEGER",
+            "mandatory": False,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "T_name": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                False,
+                {
+                    "table": "",
+                    "column": ""
+                }
+            )
+        },
+        "F_ID": {
+            "primarykey": False,
+            "autoincrement": False,
+            "type": "CHAR(20)",
+            "mandatory": True,
+            "foreignkey": (
+                True,
+                {
+                    "table": "foreign_key_table",
+                    "column": "ID"
+                }
+            )
+        },
+    })
+    db["op"].add_content("foreign_key_table", [{"name": "foreign_key_test_value1"},
+                                               {"name": "foreign_key_test_value2"}])
+    tbl_name = "test_table"
+    foreign_key_table = "foreign_key_table"
+    content = [{"T_name": "Foreignkeyrelation1", "F_ID": 1},
+               {"T_name": "Foreignkeyrelation2", "F_ID": 2}]
+    foreign_key_info = [foreign_key_table, {"column": "ID", "pos_in_cntnt": 1}]
+
+    # Führen Sie die add_content Methode aus
+    db["op"].add_content(tbl_name, content, with_foreign_Key=foreign_key_info)
+
+    for i in range(1, 3):
+        fk_table_content = db["op"].search_table("foreign_key_table", {"ID": i})
+        assert fk_table_content is not None, f"Foreign Key Eintrag {i} existiert nicht in foreign_key_table."
+
+    # Überprüfen, ob die Einträge in der test_table existieren und die Foreign Key Zuordnung korrekt ist
+    for i in range(1, 3):
+        test_table_content = db["op"].search_table(tbl_name, {"F_ID": i})
+        assert test_table_content is not None, f"Eintrag {i} existiert nicht in test_table oder Foreign Key Zuordnung ist inkorrekt."
+        assert test_table_content[0]["T_name"] == f"Foreignkeyrelation{i}", f"T_name Wert für Eintrag {i} stimmt nicht überein."
+
+
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])
