@@ -287,7 +287,7 @@ class operate_db(establish_db):
         else:
             return []
 
-    def add_content(self, tbl_name: str, cntct: dict | list[dict],
+    def add_content(self, tbl_name: str, cntnt: dict | list[dict],
                     with_foreign_Key: bool | list = False) -> None:
         errors = [
             TypeError("Wrong Datatype given! dict or list of dict needed!"),
@@ -305,20 +305,20 @@ class operate_db(establish_db):
         else:
             raise errors[3]
         if self._check_tbl(tbl_name):
-            if type(cntct) is dict:
-                if not self._compare_cols(tbl_name, list(cntct.keys())):
+            if type(cntnt) is dict:
+                if not self._compare_cols(tbl_name, list(cntnt.keys())):
                     raise errors[4]
                 sql_stmnt = f"""
                         INSERT INTO
                         {tbl_name}
-                        ({",".join(list(cntct.keys()))})
+                        ({",".join(list(cntnt.keys()))})
                         VALUES (
-                            {','.join(['?' for x in cntct.values()])}
+                            {','.join(['?' for x in cntnt.values()])}
                         );
                         """
-                cur.execute(sql_stmnt, list(cntct.values()))
-            elif type(cntct) is list:
-                for elem in cntct:
+                cur.execute(sql_stmnt, list(cntnt.values()))
+            elif type(cntnt) is list:
+                for elem in cntnt:
                     if type(elem) is dict:
                         if not self._compare_cols(tbl_name, list(elem.keys())):
                             raise errors[4]
