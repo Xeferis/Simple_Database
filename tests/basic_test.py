@@ -435,5 +435,6 @@ def test_del_content(db):
     count = cur.fetchone()[0]
     assert count == 2, "The number of entries, after deletion, is not correct."
 
+
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])
