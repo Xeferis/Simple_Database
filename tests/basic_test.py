@@ -3,7 +3,7 @@ import os
 import pytest
 from unittest.mock import MagicMock, patch
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
-from sqlite_helper import generate_db as gen, operate_db as op
+from main import generate_db as gen, operate_db as op
 
 
 def test_GitHub_action():
