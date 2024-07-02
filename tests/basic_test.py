@@ -1,6 +1,7 @@
 import sys
 import os
 import pytest
+from unittest.mock import MagicMock, patch
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 from sqlite_helper import generate_db as gen, operate_db as op
 
@@ -8,6 +9,22 @@ from sqlite_helper import generate_db as gen, operate_db as op
 def test_GitHub_action():
     assert True
 
+@pytest.fixture
+def mock_db():
+    class MockDB:
+        def cursor(self):
+            mock_cursor = MagicMock()
+            mock_cursor.fetchall.return_value = [{"column1": "value1"}]
+            return mock_cursor
+    return MockDB()
+
+@pytest.fixture
+def obj(mock_db):
+    obj = op("test")
+    obj.db = mock_db
+    yield obj
+    os.remove("./database/test.db")
+    os.rmdir("./database")
 
 @pytest.fixture()
 def db():
@@ -367,6 +384,32 @@ def test_table_content(db):
                                     {"Title": "test4"}
                                     ])
     assert False
+
+
+def test_get_content_existing_table(obj):
+    obj._check_tbl = MagicMock(return_value=True)
+    result = obj.get_content("existing_table")
+    assert result == [{"column1": "value1"}]
+
+
+def test_get_content_nonexistent_table(obj):
+    obj._check_tbl = MagicMock(return_value=False)
+    result = obj.get_content("nonexistent_table")
+    assert result == []
+
+
+def test_search_table_existing_table(obj):
+    obj._check_tbl = MagicMock(return_value=True)
+    search_query = {"column1": "value1"}
+    result = obj.search_table("existing_table", search_query)
+    assert result == [{"column1": "value1"}]
+
+
+def test_search_table_nonexistent_table(obj):
+    obj._check_tbl = MagicMock(return_value=False)
+    search_query = {"column1": "value1"}
+    result = obj.search_table("nonexistent_table", search_query)
+    assert result == []
 
 
 if __name__ == "__main__":
