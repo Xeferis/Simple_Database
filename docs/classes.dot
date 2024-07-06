@@ -1,9 +1,0 @@
-digraph "classes" {
-rankdir=BT
-charset="utf-8"
-"main.module.establish_db" [color="black", fontcolor="black", label=<{establish_db|db<br ALIGN="LEFT"/>db_name : str<br ALIGN="LEFT"/>tables : list<br ALIGN="LEFT"/>|close()<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
-"main.module.generate_db" [color="black", fontcolor="black", label=<{generate_db|<br ALIGN="LEFT"/>|add_table(tbl_name: str, col: dict): bool<br ALIGN="LEFT"/>remove_table(tbl_name): bool<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
-"main.module.operate_db" [color="black", fontcolor="black", label=<{operate_db|<br ALIGN="LEFT"/>|add_content(tbl_name: str, cntnt: dict \| list[dict], with_foreign_Key: bool \| list): None<br ALIGN="LEFT"/>del_content(tbl_name: str, search: dict): None<br ALIGN="LEFT"/>get_content(tbl_name: str): list<br ALIGN="LEFT"/>search_table(tbl_name: str, search: dict): list<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
-"main.module.generate_db" -> "main.module.establish_db" [arrowhead="empty", arrowtail="none"];
-"main.module.operate_db" -> "main.module.establish_db" [arrowhead="empty", arrowtail="none"];
-}
