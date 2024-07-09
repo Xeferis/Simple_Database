@@ -5,6 +5,11 @@ import sqlite3 as sql3
 class establish_db():
 
     def __init__(self, db_name: str) -> None:
+        """_summary_
+
+        Args:
+            db_name (str): _description_
+        """
         self.db_name = db_name
         self.tables = []
         if not os.path.exists("./database"):
