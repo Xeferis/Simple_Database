@@ -290,7 +290,7 @@ class operate_db(establish_db):
             return []
 
     def add_content(self, tbl_name: str, cntnt: dict | list[dict],
-                    with_foreign_Key: bool | list = False) -> None:
+                    with_foreign_Key: bool | tuple = False) -> None:
         """
         
         with_foreign_Key: bool | list = False
