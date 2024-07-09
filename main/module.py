@@ -5,10 +5,10 @@ import sqlite3 as sql3
 class establish_db():
 
     def __init__(self, db_name: str) -> None:
-        """_summary_
+        """Establishing a connection to a database or create a new one
 
         Args:
-            db_name (str): _description_
+            db_name (str): Just type the name. Bsp: "test" (The folder and the suffix will be added automatically)
         """
         self.db_name = db_name
         self.tables = []
