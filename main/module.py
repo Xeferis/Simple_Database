@@ -272,7 +272,8 @@ class operate_db(establish_db):
                     SELECT * FROM {tbl_name};
                     """
             cur.execute(sql_stmnt)
-            return cur.fetchall()
+            data = list(map(dict, cur.fetchall()))
+            return data
         else:
             return []
 
@@ -285,7 +286,8 @@ class operate_db(establish_db):
                     WHERE {list(search.keys())[0]} = ?;
                     """
             cur.execute(sql_stmnt, list(search.values()))
-            return cur.fetchall()
+            data = list(map(dict, cur.fetchall()))
+            return data
         else:
             return []
 
