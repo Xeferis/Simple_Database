@@ -2,7 +2,7 @@ import sys
 import os
 import pytest
 from unittest.mock import MagicMock, patch
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../")
 from main import generate_db as gen, operate_db as op
 
 
