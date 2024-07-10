@@ -335,11 +335,24 @@ class generate_db(establish_db):
 
 
 class operate_db(establish_db):
+    """Used to operate the database
+
+    Args:
+        establish_db (class): parentclass
+    """    
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
     def del_content(self, tbl_name: str, search: dict) -> None:
+        """Delete datasets based of a searchterm from the database
+
+        IMPORTANT: Deletes directly!
+
+        Args:
+            tbl_name (str): Table where you would delete data
+            search (dict): search term - see documentation for explaination
+        """        
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
             sql_stmnt = f"""
@@ -349,6 +362,14 @@ class operate_db(establish_db):
             cur.execute(sql_stmnt, list(search.values()))
 
     def get_content(self, tbl_name: str) -> list:
+        """Gets all datasets out of a table
+
+        Args:
+            tbl_name (str): Table you want to return
+
+        Returns:
+            list: returns a list of dicts with columnname and values
+        """        
         self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
@@ -362,6 +383,15 @@ class operate_db(establish_db):
             return []
 
     def search_table(self, tbl_name: str, search: dict) -> list:
+        """Search a table for a specific dataset
+
+        Args:
+            tbl_name (str): Table to search in
+            search (dict): search term - see documentation for explaination
+
+        Returns:
+            list: returns a list of dicts with columnname and values
+        """        
         self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
