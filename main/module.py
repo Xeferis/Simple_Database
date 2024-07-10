@@ -3,8 +3,15 @@ import sqlite3 as sql3
 
 
 class establish_db():
+    """Base class - Should not be uses standalone!
+    """
 
     def __init__(self, db_name: str) -> None:
+        """Establishing a connection to a database or create a new one
+
+        Args:
+            db_name (str): Just type the name. Bsp: "test" (The folder and the suffix will be added automatically)
+        """
         self.db_name = db_name
         self.tables = []
         if not os.path.exists("./database"):
@@ -16,9 +23,23 @@ class establish_db():
         self.db = sql3.connect(f"./database/{self.db_name}.db")
 
     def _check_db(self) -> bool:
+        """Internal Use only
+        
+        Checks if a database exists
+
+        Returns:
+            bool: does exist ?
+        """
         return os.path.exists(f"./database/{self.db_name}.db")
 
     def _check_tbl(self, tbl_name) -> bool:
+        """Internal Use only
+        
+        Checks if a specific table exists
+
+        Returns:
+            bool: does exist ?
+        """
         cur = self.db.cursor()
         sql_stmnt = f"""
                 SELECT name FROM sqlite_master
@@ -35,31 +56,58 @@ class establish_db():
             return True
 
     def close(self):
+        """Closes the database connection
+        """
         self.db.close()
 
 
 class generate_db(establish_db):
+    """Used for database generation
+
+    Args:
+        establish_db (class): parent class
+    """
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
     def add_table(self, tbl_name: str, col: dict) -> bool:
-        """
-        Dictionary Aufbau
+        """With this function you can add tables to a Database
 
-        "col_name": {
-                "primarykey": bool,
-                "autoincrement": bool,
-                "type": DATATYPEasSTRING,
-                "mandatory": bool,
-                "foreignkey": (
-                    bool,
-                    {
-                        "table": REFERENCE_TABLENAMEasSTRING,
-                        "column": REFERENCE_COLUMNNAMEasSTRING
-                    }
-                )
-            },
+        Args:
+            tbl_name (str): Tablename
+            col (dict): Columns as Dict
+
+            Supported Datatypes: 
+
+            "INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT",
+            "UNSIGNED BIG INT", "INT2", "INT8", "CHARACTER", "VARCHAR",
+            "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER",
+            "NVARCHAR", "TEXT", "CLOB", "CHAR", "BLOB", "REAL", "DOUBLE",
+            "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL", "BOOLEAN",
+            "DATE", "DATETIME"
+
+            Dictionary Aufbau:
+
+            "col_name": {
+                    "primarykey": bool,
+                    "autoincrement": bool,
+                    "type": DATATYPEasSTRING,
+                    "mandatory": bool,
+                    "foreignkey": (
+                        bool,
+                        {
+                            "table": REFERENCE_TABLENAMEasSTRING,
+                            "column": REFERENCE_COLUMNNAMEasSTRING
+                        }
+                    )
+                },
+
+        Raises:
+            SyntaxError: Invalid value inside the column specification
+
+        Returns:
+            bool: true if creation was successful
         """
         if not self.__check_cols(col):
             raise SyntaxError("Invalid value in columns!")
@@ -81,6 +129,14 @@ class generate_db(establish_db):
             return True
 
     def remove_table(self, tbl_name) -> bool:
+        """_summary_
+
+        Args:
+            tbl_name (_type_): _description_
+
+        Returns:
+            bool: _description_
+        """
         cur = self.db.cursor()
         sql_stmnt = f"""
                     DROP TABLE {tbl_name};
@@ -94,6 +150,21 @@ class generate_db(establish_db):
         return False
 
     def __col2string(self, col: dict) -> list:
+        """Internal use only
+
+        converts the column dictionary to a sql string
+
+        Args:
+            col (dict): input as dict. Formated like in Add_table
+
+        Raises:
+            ValueError: Only one Primary or Foreign key can be used
+
+        Returns:
+            list: Contents are the SQL statements
+        """
+        datatype_int = ["INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT",
+            "UNSIGNED BIG INT", "INT2", "INT8"]        
         out = []
         frngky = []
         for c in col:
@@ -106,7 +177,7 @@ class generate_db(establish_db):
             if col[c]["primarykey"]:
                 tmp.append("PRIMARY KEY")
 
-            if (col[c]["autoincrement"] and col[c]["type"] == "INTEGER"
+            if (col[c]["autoincrement"] and col[c]["type"] in datatype_int
                     and col[c]["primarykey"] and not col[c]["mandatory"]):
                 tmp.append("AUTOINCREMENT")
 
@@ -125,6 +196,19 @@ class generate_db(establish_db):
         return out + frngky
 
     def __check_cols(self, col: dict) -> bool:
+        """Checks if the Columsn got the right format
+
+        Args:
+            col (dict): input as dict. Formated like in Add_table
+
+        Raises:
+            KeyError: "Key don't match needed layout or spelling"
+            TypeError: Datatype doesn't match needed
+            ValueError: "Invalid value in column naming!"
+
+        Returns:
+            bool: valid columns if true
+        """        
         keys_valid = False
         datatypes_valid = False
         columns_valid = False
@@ -251,11 +335,24 @@ class generate_db(establish_db):
 
 
 class operate_db(establish_db):
+    """Used to operate the database
+
+    Args:
+        establish_db (class): parentclass
+    """    
 
     def __init__(self, db_name: str) -> None:
         super().__init__(db_name)
 
     def del_content(self, tbl_name: str, search: dict) -> None:
+        """Delete datasets based of a searchterm from the database
+
+        IMPORTANT: Deletes directly!
+
+        Args:
+            tbl_name (str): Table where you would delete data
+            search (dict): search term - see documentation for explaination
+        """        
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
             sql_stmnt = f"""
@@ -265,6 +362,14 @@ class operate_db(establish_db):
             cur.execute(sql_stmnt, list(search.values()))
 
     def get_content(self, tbl_name: str) -> list:
+        """Gets all datasets out of a table
+
+        Args:
+            tbl_name (str): Table you want to return
+
+        Returns:
+            list: returns a list of dicts with columnname and values
+        """        
         self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
@@ -278,6 +383,15 @@ class operate_db(establish_db):
             return []
 
     def search_table(self, tbl_name: str, search: dict) -> list:
+        """Search a table for a specific dataset
+
+        Args:
+            tbl_name (str): Table to search in
+            search (dict): search term - see documentation for explaination
+
+        Returns:
+            list: returns a list of dicts with columnname and values
+        """        
         self.db.row_factory = sql3.Row
         cur = self.db.cursor()
         if self._check_tbl(tbl_name):
@@ -293,8 +407,15 @@ class operate_db(establish_db):
 
     def add_content(self, tbl_name: str, cntnt: dict | list[dict],
                     with_foreign_Key: bool | tuple = False) -> None:
-        """
+        """_summary_
+
+        Args:
+            tbl_name (str): table to add to
+            cntnt (dict | list[dict]): content you want to add. Single or list - see docs
+            with_foreign_Key (bool | tuple, optional): Defaults to False.
         
+        Explaination:
+
         with_foreign_Key: bool | list = False
         if is list:
             list[0] = "table": str
