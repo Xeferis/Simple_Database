@@ -21,9 +21,23 @@ class establish_db():
         self.db = sql3.connect(f"./database/{self.db_name}.db")
 
     def _check_db(self) -> bool:
+        """Internal Use only
+        
+        Checks if a database exists
+
+        Returns:
+            bool: does exist ?
+        """
         return os.path.exists(f"./database/{self.db_name}.db")
 
     def _check_tbl(self, tbl_name) -> bool:
+        """Internal Use only
+        
+        Checks if a specific table exists
+
+        Returns:
+            bool: does exist ?
+        """
         cur = self.db.cursor()
         sql_stmnt = f"""
                 SELECT name FROM sqlite_master
@@ -40,6 +54,8 @@ class establish_db():
             return True
 
     def close(self):
+        """Closes the database connection
+        """
         self.db.close()
 
 
