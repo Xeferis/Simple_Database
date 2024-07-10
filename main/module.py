@@ -407,8 +407,15 @@ class operate_db(establish_db):
 
     def add_content(self, tbl_name: str, cntnt: dict | list[dict],
                     with_foreign_Key: bool | tuple = False) -> None:
-        """
+        """_summary_
+
+        Args:
+            tbl_name (str): table to add to
+            cntnt (dict | list[dict]): content you want to add. Single or list - see docs
+            with_foreign_Key (bool | tuple, optional): Defaults to False.
         
+        Explaination:
+
         with_foreign_Key: bool | list = False
         if is list:
             list[0] = "table": str
