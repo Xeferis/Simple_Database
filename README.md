@@ -224,6 +224,27 @@ db.add_content('Users', data1, ("Department" {"DID": 423}))
 db.close()
 ```
 
+* ### `update_content()`
+ 
+Parameters:  
+`tbl_name: str` 
+`search: dict`
+`cntnt: dict | dict`  
+ 
+   
+You can update datasets by searching for it and then fill the new information.
+
+_Excample 1:_
+```
+# DB is already initialized and table "Users" is added.
+# The database has a dataset with the id 456 and a current name of "bob"
+tbl = "users"
+dataset2update = {"id": 456}
+data2update = {"name": "john"}
+db.update_content(tbl, dataset2update, data2update)
+# Now the dataset with the id 465 should have the name "john" and not "bob" anymore
+```
+
 * ### `del_content()`
  
 Parameters:  

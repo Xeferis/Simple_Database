@@ -484,6 +484,26 @@ class operate_db(establish_db):
             raise errors[1]
         self.db.commit()
 
+    def update_content(self, tbl_name: str, search: dict, cntnt: dict) -> None:
+        """Update a dataset in a table
+
+        Args:
+            tbl_name (str): Table to update
+            search (dict): search term - see documentation for explaination
+            cntnt (dict): content you want to add. Single - see docs
+        """        
+        cur = self.db.cursor()
+        if self._check_tbl(tbl_name):
+            if not self._compare_cols(tbl_name, list(cntnt.keys())):
+                raise LookupError("Columns do not match destination table!")
+            sql_stmnt = f"""
+                    UPDATE {tbl_name}
+                    SET {list(cntnt.keys())[0]} = ?
+                    WHERE {list(search.keys())[0]} = ?;
+                    """
+            cur.execute(sql_stmnt, [list(cntnt.values())[0], list(search.values())[0]])
+            self.db.commit()
+
     def _compare_cols(self, tbl_name: str, clmns: list) -> bool:
         """Comparing input columns with the destination Table
 
