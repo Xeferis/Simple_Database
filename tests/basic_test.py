@@ -624,6 +624,24 @@ def test_foreign_key_assignment_multiple(db):
         assert test_table_content[0]["T_name"] == f"Foreignkeyrelation{i}", f"\
             T_name Wert für Eintrag {i} stimmt nicht überein."
 
+    def test_update_content(db):
+        cur = db["op"].db.cursor()
+        cur.execute('CREATE TABLE test_tbl (id INTEGER PRIMARY KEY, name TEXT)')
+
+        cur.executemany('INSERT INTO test_tbl (name) VALUES (?)',
+                        [('Alice',), ('Bob',), ('Charlie',)])
+        db["op"].db.commit()
+
+        db["op"].update_content('test_tbl', {'name': 'Bob'}, {'name': 'Robert'})
+        cur.execute('SELECT * FROM test_tbl WHERE name = ?', ('Bob',))
+        assert cur.fetchone() is None, "The entry was not updated."
+
+        cur.execute('SELECT * FROM test_tbl WHERE name = ?', ('Robert',))
+        assert cur.fetchone() is not None, "The entry was not updated."
+
+        cur.execute('SELECT COUNT(*) FROM test_tbl')
+        count = cur.fetchone()[0]
+        assert count == 3, "The number of entries is not correct."
 
 if __name__ == "__main__":
     pytest.main([r"./tests/basic_test.py", '-v'])
